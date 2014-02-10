@@ -273,6 +273,14 @@ namespace GLViewer
 			CreateRThread();
 	}
 
+	void GLViewer::OnKeyDown(KeyEventArgs^ e)
+	{
+		if(DesignMode || !_initialized)
+			return;
+
+		QueueActions(gcnew KeyEventHandler(this, &GLViewer::OnGLKeyDown), this, e);
+	}
+
 	void GLViewer::DestroyHandle()
 	{
 		if (RecreatingHandle)
@@ -312,6 +320,11 @@ namespace GLViewer
 	void GLViewer::OnGLInit(Object^ obj, EventArgs^ e)
 	{
 		GLInit(this, e);
+	}
+
+	void GLViewer::OnGLKeyDown(Object^ obj, KeyEventArgs^ e)
+	{
+		GLKeyDown(this, e);
 	}
 
 	void GLViewer::SwapBackBuffers()

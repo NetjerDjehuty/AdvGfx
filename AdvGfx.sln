@@ -1,0 +1,32 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AdvGfx", "AdvGfx\AdvGfx.vcxproj", "{9EB38800-F379-4DC0-A24A-9544332B57FF}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GUI", "GUI\GUI.vcxproj", "{47219B5A-CDA6-42BA-8704-6C36C9EC776D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GLViewer", "GLViewer\GLViewer.vcxproj", "{9FE45E97-BD4C-440F-B83D-2BA9C983FBEE}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9EB38800-F379-4DC0-A24A-9544332B57FF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9EB38800-F379-4DC0-A24A-9544332B57FF}.Debug|Win32.Build.0 = Debug|Win32
+		{9EB38800-F379-4DC0-A24A-9544332B57FF}.Release|Win32.ActiveCfg = Release|Win32
+		{9EB38800-F379-4DC0-A24A-9544332B57FF}.Release|Win32.Build.0 = Release|Win32
+		{47219B5A-CDA6-42BA-8704-6C36C9EC776D}.Debug|Win32.ActiveCfg = Debug|Win32
+		{47219B5A-CDA6-42BA-8704-6C36C9EC776D}.Debug|Win32.Build.0 = Debug|Win32
+		{47219B5A-CDA6-42BA-8704-6C36C9EC776D}.Release|Win32.ActiveCfg = Release|Win32
+		{47219B5A-CDA6-42BA-8704-6C36C9EC776D}.Release|Win32.Build.0 = Release|Win32
+		{9FE45E97-BD4C-440F-B83D-2BA9C983FBEE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{9FE45E97-BD4C-440F-B83D-2BA9C983FBEE}.Debug|Win32.Build.0 = Debug|Win32
+		{9FE45E97-BD4C-440F-B83D-2BA9C983FBEE}.Release|Win32.ActiveCfg = Release|Win32
+		{9FE45E97-BD4C-440F-B83D-2BA9C983FBEE}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
