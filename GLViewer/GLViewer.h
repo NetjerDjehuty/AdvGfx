@@ -28,7 +28,9 @@ namespace GLViewer {
 		// Occurs when the scene needs to redraw itself
 		event EventHandler^ GLDraw;
 		// Occurs when a key is down
-		event EventHandler^ GLKeyDown;
+		event KeyEventHandler^ GLKeyDown;
+		// Occurs when a mousekey is pressed
+		event MouseEventHandler^ GLMouseDown;
 
 
 		// methods
@@ -107,6 +109,7 @@ namespace GLViewer {
 		virtual void OnResize(EventArgs^ e) override;
 		virtual void OnLoad(EventArgs^ e) override;
 		virtual void OnKeyDown(KeyEventArgs^ e) override;
+		virtual void OnMouseDown(MouseEventArgs^ e) override;
 
 		virtual void WndProc(Message% m) override;
 		virtual void CreateHandle() override;
@@ -118,5 +121,6 @@ namespace GLViewer {
 		virtual void OnGLDraw(Object^ obj, EventArgs^ e);
 		virtual void OnGLResize(Object^ obj, EventArgs^ e);
 		virtual void OnGLKeyDown(Object^ obj, KeyEventArgs^ e);
+		virtual void OnGLMouseDown(Object^ obj, MouseEventArgs^ e);
 	};
 }

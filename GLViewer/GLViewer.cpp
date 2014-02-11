@@ -281,6 +281,14 @@ namespace GLViewer
 		QueueActions(gcnew KeyEventHandler(this, &GLViewer::OnGLKeyDown), this, e);
 	}
 
+	void GLViewer::OnMouseDown(MouseEventArgs^ e)
+	{
+		if(DesignMode || !_initialized)
+			return;
+
+		QueueActions(gcnew MouseEventHandler(this, &GLViewer::OnGLMouseDown), this, e);
+	}
+
 	void GLViewer::DestroyHandle()
 	{
 		if (RecreatingHandle)
@@ -325,6 +333,11 @@ namespace GLViewer
 	void GLViewer::OnGLKeyDown(Object^ obj, KeyEventArgs^ e)
 	{
 		GLKeyDown(this, e);
+	}
+
+	void GLViewer::OnGLMouseDown(Object^ obj, MouseEventArgs^ e)
+	{
+		GLMouseDown(this, e);
 	}
 
 	void GLViewer::SwapBackBuffers()
