@@ -111,6 +111,7 @@ namespace GLViewer {
 		virtual void OnKeyDown(KeyEventArgs^ e) override;
 		virtual void OnMouseDown(MouseEventArgs^ e) override;
 
+		virtual bool IsInputKey(Keys k) override;
 		virtual void WndProc(Message% m) override;
 		virtual void CreateHandle() override;
 		virtual void DestroyHandle() override;

@@ -297,6 +297,19 @@ namespace GLViewer
 		__super::DestroyHandle();
 	}
 
+	bool GLViewer::IsInputKey(Keys k)
+	{
+		switch (k)
+		{
+		case Keys::Left:
+		case Keys::Right:
+		case Keys::Up:
+		case Keys::Down:
+			return true;
+		}
+		return __super::IsInputKey(k);
+	}
+
 	void GLViewer::WndProc(Message% m)
 	{
 		switch (m.Msg)
