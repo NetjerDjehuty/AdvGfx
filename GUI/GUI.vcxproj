@@ -81,6 +81,14 @@
     <ClCompile Include="MainViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\AdvGfx\AdvGfx.vcxproj">
+      <Project>{9eb38800-f379-4dc0-a24a-9544332b57ff}</Project>
+      <Private>true</Private>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
     <ProjectReference Include="..\GLViewer\GLViewer.vcxproj">
       <Project>{9fe45e97-bd4c-440f-b83d-2ba9c983fbee}</Project>
       <Private>true</Private>
@@ -100,6 +108,10 @@
     <EmbeddedResource Include="MainViewer.resx">
       <DependentUpon>MainViewer.h</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="basic.frag" />
+    <None Include="basic.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

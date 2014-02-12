@@ -6,9 +6,10 @@
 #include <glm/ext.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
+
+#include "../AdvGfx/AdvGfx.h"
 
 namespace GUI {
 
@@ -61,16 +62,15 @@ namespace GUI {
 
 	private:
 
+
 		void GLInit(Object^ sender, EventArgs^ e)
 		{
-			glClearColor(.1f, .2f, .3f, 1.f);
-			//AdvGfxCore::Init();
+			AdvGfxCore::Init();
 		}
 
 		void GLDraw(Object^ sender, EventArgs^ e)
 		{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-			//AdvGfxCore::Draw();
+			AdvGfxCore::Draw();
 		}
 
 		void GLKeyDown(Object^ sender, KeyEventArgs^ e)
