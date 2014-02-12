@@ -68,8 +68,8 @@ namespace AdvGfxCore
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		//delete[] vArr;
-		//delete[] fArr;
+		//delete[[]] vArr;
+		//delete[[]] fArr;
 	}
 
 

@@ -73,6 +73,14 @@
     <ClCompile Include="AdvGfx.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="..\GUI\basic.frag">
+      <FileType>Document</FileType>
+    </None>
+    <None Include="..\GUI\basic.vert">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

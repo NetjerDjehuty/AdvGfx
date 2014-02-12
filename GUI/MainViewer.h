@@ -2,9 +2,6 @@
 
 #include <GL/glew.h>
 #include <GL/wglew.h>
-#include <glm/glm.hpp>
-#include <glm/ext.hpp>
-#include <glm/gtc/type_ptr.hpp>
 
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "glew32.lib")
@@ -157,7 +154,7 @@ namespace GUI {
 
 
 		protected: 
-			glm::mat4 MoveCamera(int x, int y, int z)
+			void MoveCamera(int x, int y, int z)
 			{
 			}
 
