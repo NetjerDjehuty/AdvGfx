@@ -2,7 +2,9 @@
 
 #include <GL/glew.h>
 #include <GL/wglew.h>
-
+#include <glm/glm.hpp>
+#include <glm/ext.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 
 #pragma comment(lib, "opengl32.lib")
@@ -37,6 +39,9 @@ namespace GUI {
 
 			this->glViewer1->GLInit += gcnew System::EventHandler(this, &MainViewer::GLInit);
 			this->glViewer1->GLDraw += gcnew System::EventHandler(this, &MainViewer::GLDraw);
+			this->glViewer1->GLKeyDown += gcnew KeyEventHandler(this, &MainViewer::GLKeyDown);
+			this->glViewer1->GLMouseDown += gcnew MouseEventHandler(this, &MainViewer::GLMouseDown);
+			this->glViewer1->GLMouseScroll += gcnew MouseEventHandler(this, &MainViewer::GLMouseScroll);
 		}
 
 	protected:
@@ -67,6 +72,107 @@ namespace GUI {
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 			//AdvGfxCore::Draw();
 		}
+
+		void GLKeyDown(Object^ sender, KeyEventArgs^ e)
+		{
+			// TODO: Move camera
+			switch(e->KeyCode)
+			{
+			case Keys::Left:
+				MoveCamera(-1, 0, 0);
+				Console::WriteLine("Left");
+				break;
+			case Keys::A:
+				MoveCamera(-1, 0, 0);
+				Console::WriteLine("A");
+				break;
+			case Keys::Right:
+				MoveCamera(1, 0, 0);
+				Console::WriteLine("Right");
+				break;
+			case Keys::D:
+				MoveCamera(1, 0, 0);
+				Console::WriteLine("D");
+				break;
+			case Keys::Up:
+				MoveCamera(0, -1, 0);
+				Console::WriteLine("Up");
+				break;
+			case Keys::W:
+				MoveCamera(0, -1, 0);
+				Console::WriteLine("W");
+				break;
+			case Keys::Down:
+				MoveCamera(0, 1, 0);
+				Console::WriteLine("Down");
+				break;
+			case Keys::S:
+				MoveCamera(0, 1, 0);
+				Console::WriteLine("S");
+				break;
+			case Keys::Add: // For zooming
+				MoveCamera(0, 0, 1);
+				Console::WriteLine("+ key");
+				break;
+			case Keys::Subtract: // For zooming
+				MoveCamera(0, 0, -1);
+				Console::WriteLine("- key");
+				break;
+			case Keys::R: // reset
+				ResetCamera();
+				Console::WriteLine("R");
+				break;
+			default: 
+				Console::WriteLine("Other button; {0}", e->KeyCode.ToString());
+			}
+		}
+
+		void GLMouseDown(Object^ sender, MouseEventArgs^ e)
+		{
+			Console::WriteLine("Mouse event");
+			switch(e->Button)
+			{
+			case System::Windows::Forms::MouseButtons::Left:
+				Console::WriteLine("left button");
+				break;
+			case System::Windows::Forms::MouseButtons::Right:
+				Console::WriteLine("Right button");
+				break;
+			case System::Windows::Forms::MouseButtons::Middle:
+				Console::WriteLine("Middle button");
+				break;
+			default:
+				Console::WriteLine("Other buttton; {0}", e->Button.ToString());
+			}
+		}
+
+		void GLMouseScroll(Object^ sender, MouseEventArgs^ e)
+		{
+			Console::WriteLine("Scrolled? Yup {0} degree", e->Delta);
+			if(e->Delta < 0)
+				ZoomCamera(-1);
+			else
+				ZoomCamera(1);
+		}
+
+
+		protected: 
+			glm::mat4 MoveCamera(int x, int y, int z)
+			{
+			}
+
+		protected:
+			// i is used to zoom in (i > 0) or zoom out (i < 0)
+			void ZoomCamera(int i) 
+			{
+				
+			}
+
+		protected:
+			void ResetCamera()
+			{
+
+			}
 
 		/// <summary>
 		/// Required designer variable.
