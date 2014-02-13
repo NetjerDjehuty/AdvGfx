@@ -3,3 +3,4 @@
 *.suo
 AdvGfx/Debug/
 Debug/
+*.orig
