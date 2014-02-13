@@ -6,12 +6,74 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <GLM\glm.hpp>
+#include <GLM\ext.hpp>
+
 
 
 namespace AdvGfxCore
 {
+
 	using namespace std;
+
+	void getErrors()
+	{
+		GLenum error = glGetError();
+		while (error)
+		{
+			cout << gluErrorString(error) << endl;
+			error = glGetError();
+		}
+	}
+
+
+	static string textFileRead(const char *fileName) {
+		string fileString = string(); // A string for storing the file contents
+		string line = string(); // A string for holding the current line
+
+		ifstream file(fileName); // Open an input stream with the selected file
+		if (file.is_open()) { // If the file opened successfully
+			while (!file.eof()) { // While we are not at the end of the file
+				getline(file, line); // Get the current line
+				fileString.append(line); // Append the line to our file string
+				fileString.append("\n"); // Appand a new line character
+			}
+			file.close(); // Close the file
+		}
+
+		return fileString; // Return our string
+	}
+
+	static bool validateProgram(GLuint program) {
+		const unsigned int BUFFER_SIZE = 512;
+		char buffer[BUFFER_SIZE];
+		memset(buffer, 0, BUFFER_SIZE);
+		GLsizei length = 0;
+
+		glGetProgramInfoLog(program, BUFFER_SIZE, &length, buffer); // Ask OpenGL to give us the log associated with the program
+		if (length > 0) // If we have any information to display
+		{
+			cout << "Program " << program << " link error: " << buffer << endl; // Output the information
+			return false;
+		}
+
+		glValidateProgram(program); // Get OpenGL to try validating the program
+		GLint status;
+		glGetProgramiv(program, GL_VALIDATE_STATUS, &status); // Find out if the shader program validated correctly
+		if (status == GL_FALSE) // If there was a problem validating
+		{
+			cout << "Error validating shader " << program << endl; // Output which program had the error
+			return false;
+		}
+
+		return true;
+	}
+
+	GLuint vao;
 	GLuint posBuffObj;
+	GLuint prog;
+	
+	glm::mat4 viewMatrix;
 
 	void Init()
 	{
@@ -20,26 +82,32 @@ namespace AdvGfxCore
 
 		// simple triangle
 		const float vertexPositions[] = {
-			0.75f, 0.75f, 0.0f, 1.0f,
-			0.75f, -0.75f, 0.0f, 1.0f,
-			-0.75f, -0.75f, 0.0f, 1.0f,
+			0.75f, 0.75f, 0.0f,
+			0.75f, -0.75f, 0.0f,
+			-0.75f, -0.75f, 0.0f,
 		};
 
-		GLuint prog = glCreateProgram();
+		prog = glCreateProgram();
 		GLuint vert = glCreateShader(GL_VERTEX_SHADER);
 		GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
 
-		unsigned int vlength = getFileLength(ifstream("basic.vert"));
-		unsigned int flength = getFileLength(ifstream("basic.frag"));
+		//unsigned int vlength = getFileLength(ifstream("basic.vert"));
+		//unsigned int flength = getFileLength(ifstream("basic.frag"));
 
-		GLint vLength = (GLint) vlength;
-		GLint fLength = (GLint) flength;
+		//GLint vLength = (GLint) vlength;
+		//GLint fLength = (GLint) flength;
 
-		const char** vArr = constructArray(ifstream("basic.vert"), vlength);
-		const char** fArr = constructArray(ifstream("basic.frag"), flength);
+		//const char** vArr = constructArray(ifstream("basic.vert"), vlength);
+		//const char** fArr = constructArray(ifstream("basic.frag"), flength);
 
-		glShaderSource(vert, 1, vArr, &vLength);
-		glShaderSource(frag, 1, fArr, &fLength);
+		string v = textFileRead("basic.vert");
+		string f = textFileRead("basic.frag");
+
+		const char* vArr = v.c_str();
+		const char* fArr = f.c_str();
+
+		glShaderSource(vert, 1, &vArr, 0);
+		glShaderSource(frag, 1, &fArr, 0);
 		//glShaderSource(frag, 1, flength, fArr);
 
 		glCompileShaderARB(vert);
@@ -53,6 +121,7 @@ namespace AdvGfxCore
 			glGetObjectParameterivARB(frag, GL_COMPILE_STATUS, &compiled);
 			if(compiled)
 			{
+				cout << "Yesh!" << endl;
 				//continue;
 			}
 		}
@@ -62,24 +131,45 @@ namespace AdvGfxCore
 
 		glLinkProgram(prog);
 
+		validateProgram(prog);
+		
+		glGenVertexArrays(1, &vao);
+		glBindVertexArray(vao);
 		glGenBuffers(1, &posBuffObj);
-
 		glBindBuffer(GL_ARRAY_BUFFER, posBuffObj);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-		//delete[[]] vArr;
-		//delete[[]] fArr;
+		
+		glEnableVertexAttribArray(0);
+
+		int projectionMatrixLocation = glGetUniformLocation(prog, "projection");
+		int viewMatrixLocation = glGetUniformLocation(prog, "view");
+		int modelMatrixLocation = glGetUniformLocation(prog, "model");
+
+		glm::mat4 projectionMatrix = glm::perspective(60.0f, 4.f / 3.f, 0.1f, 100.f);  
+		viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+
+		glUseProgram(prog);
+
+
+		glUniformMatrix4fv(projectionMatrixLocation, 1, false, &projectionMatrix[0][0]);
+		glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
+		glUniformMatrix4fv(modelMatrixLocation, 1, false, &modelMatrix[0][0]);
+
+
+		getErrors();
 	}
 
 
 	void Draw()
 	{
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-			glBindBuffer(GL_ARRAY_BUFFER, posBuffObj);
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		getErrors();
 	}
 
 	unsigned int getFileLength(ifstream& file)
@@ -89,7 +179,7 @@ namespace AdvGfxCore
 		file.seekg(0,ios::end);
 		unsigned int len = file.tellg();
 		file.seekg(ios::beg);
-    
+
 		cout << len << '\n';
 		return len;
 	}
@@ -102,7 +192,7 @@ namespace AdvGfxCore
 			int i = 0;
 			while(file.good())
 			{
-				arr[i] = file.get(); // gets char from line
+				arr[i++] = file.get(); // gets char from line
 			}
 			arr[i] = 0;
 		}

@@ -14,4 +14,5 @@
 #include <GL\wglew.h>
 
 #pragma comment(lib, "opengl32.lib")
+#pragma comment(lib, "glu32.lib")
 #pragma comment(lib, "glew32.lib")
