@@ -10,6 +10,8 @@ namespace AdvGfxCore
 	void Init();
 	void Draw();
 	void MoveCamera(int x, int y, int z);
+	void RotateCamera(int x, int y);
+	void ResetCamera();
 	unsigned int getFileLength(std::ifstream&);
 	const char** constructArray(std::ifstream& file, int length);
 }

@@ -33,6 +33,8 @@ namespace GLViewer {
 		event MouseEventHandler^ GLMouseDown;
 		// Occurs when the mousewheel is scrolled
 		event MouseEventHandler^ GLMouseScroll;
+		// Occurs when the mouse is dragged
+		event MouseEventHandler^ GLMouseMove;
 
 
 		// methods
@@ -82,7 +84,7 @@ namespace GLViewer {
 		/// <summary>
 		/// Required method for Designer support - do not modify
 		/// the contents of this method with the code editor.
-		/// </summary>
+		/// </summary>d
 		void InitializeComponent(void)
 		{
 			this->SuspendLayout();
@@ -113,6 +115,7 @@ namespace GLViewer {
 		virtual void OnKeyDown(KeyEventArgs^ e) override;
 		virtual void OnMouseDown(MouseEventArgs^ e) override;
 		virtual void OnMouseWheel(MouseEventArgs^ e) override;
+		virtual void OnMouseMove(MouseEventArgs^ e) override;
 
 		virtual bool IsInputKey(Keys k) override;
 		virtual void WndProc(Message% m) override;
@@ -127,5 +130,6 @@ namespace GLViewer {
 		virtual void OnGLKeyDown(Object^ obj, KeyEventArgs^ e);
 		virtual void OnGLMouseDown(Object^ obj, MouseEventArgs^ e);
 		virtual void OnGLMouseScroll(Object^ obj, MouseEventArgs^ e);
+		virtual void OnGLMouseMove(Object^ obj, MouseEventArgs^ e);
 	};
 }

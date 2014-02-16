@@ -79,6 +79,8 @@ namespace AdvGfxCore
 	glm::mat4 viewMatrix;
 	glm::vec3 viewVec;
 
+	float degree = 0.0f;
+
 	void Init()
 	{
 		loadObjInVAO("object.obj");
@@ -89,8 +91,8 @@ namespace AdvGfxCore
 		// simple triangle
 		const float vertexPositions[] = {
 			0.75f, 0.75f, 0.0f,
-			0.75f, -0.75f, 0.0f,
-			-0.75f, -0.75f, 0.0f,
+			0.75f, -0.75f, 0.75f,
+			-0.75f, -0.75f, 0.75f,
 		};
 
 		prog = glCreateProgram();
@@ -181,23 +183,31 @@ namespace AdvGfxCore
 
 	void MoveCamera(int x, int y, int z)
 	{
-		int projectionMatrixLocation = glGetUniformLocation(prog, "projection");
 		int viewMatrixLocation = glGetUniformLocation(prog, "view");
-		int modelMatrixLocation = glGetUniformLocation(prog, "model");
-
-		cout << " x: " << x << " y: " << y << " z: " << z << endl;
-
 		viewVec.operator+=(glm::vec3(x,y,z));
-
-		glm::mat4 projectionMatrix = glm::perspective(60.0f, 4.f / 3.f, 0.1f, 100.f);  
 		viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
-
-		glUseProgram(prog);
-
-		glUniformMatrix4fv(projectionMatrixLocation, 1, false, &projectionMatrix[0][0]);
+		viewMatrix = glm::rotate(viewMatrix, degree, glm::normalize(viewVec));
 		glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
-		glUniformMatrix4fv(modelMatrixLocation, 1, false, &modelMatrix[0][0]);
+	}
+	
+	void RotateCamera(int x, int y)
+	{
+		if(x < 0)
+			degree += x;
+		else
+			degree += x;
+		int viewMatrixLocation = glGetUniformLocation(prog, "view");
+		viewMatrix = glm::translate(glm::mat4(1.f), viewVec);
+		viewMatrix = glm::rotate(viewMatrix, degree, glm::vec3(0.f,1.f,0.f));
+		glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
+	}
+
+	void ResetCamera()
+	{
+		int viewMatrixLocation = glGetUniformLocation(prog, "view");
+		viewVec = glm::vec3(0.0f, 0.0f, -5.0f);
+		viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
+		glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
 	}
 
 	unsigned int getFileLength(ifstream& file)

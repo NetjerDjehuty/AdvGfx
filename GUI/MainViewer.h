@@ -40,6 +40,7 @@ namespace GUI {
 			this->glViewer1->GLKeyDown += gcnew KeyEventHandler(this, &MainViewer::GLKeyDown);
 			this->glViewer1->GLMouseDown += gcnew MouseEventHandler(this, &MainViewer::GLMouseDown);
 			this->glViewer1->GLMouseScroll += gcnew MouseEventHandler(this, &MainViewer::GLMouseScroll);
+			this->glViewer1->GLMouseMove += gcnew MouseEventHandler(this, &MainViewer::GLMouseMove);
 		}
 
 	protected:
@@ -55,13 +56,14 @@ namespace GUI {
 		}
 	private: System::Windows::Forms::SplitContainer^  splitContainer1;
 	private: GLViewer::GLViewer^ glViewer1;
-	protected: 
+	System::Drawing::Point oldLoc;
 
 	private:
 
 
 		void GLInit(Object^ sender, EventArgs^ e)
 		{
+			oldLoc = System::Drawing::Point(0.0, 0.0);
 			AdvGfxCore::Init();
 		}
 
@@ -126,6 +128,7 @@ namespace GUI {
 
 		void GLMouseDown(Object^ sender, MouseEventArgs^ e)
 		{
+			auto oldLocation = e->Location;
 			Console::WriteLine("Mouse event");
 			switch(e->Button)
 			{
@@ -147,9 +150,21 @@ namespace GUI {
 		{
 			Console::WriteLine("Scrolled? Yup {0} degree", e->Delta);
 			if(e->Delta < 0)
-				ZoomCamera(-1);
+				MoveCamera(0,0,-1);
 			else
-				ZoomCamera(1);
+				MoveCamera(0,0,1);
+		}
+
+		void GLMouseMove(Object^ sender, MouseEventArgs^ e)
+		{
+			System::Drawing::Point newLoc = e->Location;
+			if(e->Button == System::Windows::Forms::MouseButtons::Left)
+			{
+				int x = (oldLoc.X - newLoc.X);
+				int y = (oldLoc.Y - newLoc.Y);
+				AdvGfxCore::RotateCamera(x, y);
+			}
+			oldLoc = newLoc;
 		}
 
 
@@ -160,16 +175,9 @@ namespace GUI {
 			}
 
 		protected:
-			// i is used to zoom in (i > 0) or zoom out (i < 0)
-			void ZoomCamera(int i) 
-			{
-				
-			}
-
-		protected:
 			void ResetCamera()
 			{
-
+				AdvGfxCore::ResetCamera();
 			}
 
 		/// <summary>
