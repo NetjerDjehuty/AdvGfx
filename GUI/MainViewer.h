@@ -57,10 +57,7 @@ namespace GUI {
 	private: System::Windows::Forms::SplitContainer^  splitContainer1;
 	private: GLViewer::GLViewer^ glViewer1;
 	System::Drawing::Point oldLoc;
-
 	private:
-
-
 		void GLInit(Object^ sender, EventArgs^ e)
 		{
 			oldLoc = System::Drawing::Point(0.0, 0.0);
@@ -74,56 +71,20 @@ namespace GUI {
 
 		void GLKeyDown(Object^ sender, KeyEventArgs^ e)
 		{
-			// TODO: Move camera
-			switch(e->KeyCode)
-			{
-			case Keys::Left:
-				MoveCamera(-1, 0, 0);
-				Console::WriteLine("Left");
-				break;
-			case Keys::A:
-				MoveCamera(-1, 0, 0);
-				Console::WriteLine("A");
-				break;
-			case Keys::Right:
-				MoveCamera(1, 0, 0);
-				Console::WriteLine("Right");
-				break;
-			case Keys::D:
-				MoveCamera(1, 0, 0);
-				Console::WriteLine("D");
-				break;
-			case Keys::Up:
-				MoveCamera(0, 1, 0);
-				Console::WriteLine("Up");
-				break;
-			case Keys::W:
-				MoveCamera(0, 1, 0);
-				Console::WriteLine("W");
-				break;
-			case Keys::Down:
-				MoveCamera(0, -1, 0);
-				Console::WriteLine("Down");
-				break;
-			case Keys::S:
-				MoveCamera(0, -1, 0);
-				Console::WriteLine("S");
-				break;
-			case Keys::Add: // For zooming
-				MoveCamera(0, 0, 1);
-				Console::WriteLine("+ key");
-				break;
-			case Keys::Subtract: // For zooming
-				MoveCamera(0, 0, -1);
-				Console::WriteLine("- key");
-				break;
-			case Keys::R: // reset
+			if(e->KeyCode == Keys::Left || e->KeyCode == Keys::A)
+				MoveCamera(-10.f, .0f, .0f);
+			if(e->KeyCode == Keys::Right || e->KeyCode == Keys::D)
+				MoveCamera(10.f, .0f, .0f);
+			if(e->KeyCode == Keys::Up || e->KeyCode == Keys::W)
+				MoveCamera(.0f, 10.f, .0f);
+			if(e->KeyCode == Keys::Down || e->KeyCode == Keys::S)
+				MoveCamera(.0f, -10.f, .0f);
+			if(e->KeyCode == Keys::R)
 				ResetCamera();
-				Console::WriteLine("R");
-				break;
-			default: 
-				Console::WriteLine("Other button; {0}", e->KeyCode.ToString());
-			}
+			if(e->KeyCode == Keys::Subtract)
+				MoveCamera(.0f, .0f, -10.f);
+			if(e->KeyCode == Keys::Add)
+				MoveCamera(.0f, .0f, 10.f);
 		}
 
 		void GLMouseDown(Object^ sender, MouseEventArgs^ e)
@@ -150,9 +111,9 @@ namespace GUI {
 		{
 			Console::WriteLine("Scrolled? Yup {0} degree", e->Delta);
 			if(e->Delta < 0)
-				MoveCamera(0,0,-1);
+				MoveCamera(.0f,.0f,-.1f);
 			else
-				MoveCamera(0,0,1);
+				MoveCamera(.0f,.0f,.1f);
 		}
 
 		void GLMouseMove(Object^ sender, MouseEventArgs^ e)
@@ -169,7 +130,7 @@ namespace GUI {
 
 
 		protected: 
-			void MoveCamera(int x, int y, int z)
+			void MoveCamera(float x, float y, float z)
 			{
 				AdvGfxCore::MoveCamera(x,y,z);
 			}

@@ -81,6 +81,10 @@ namespace AdvGfxCore
 	float xRot = 0.0f;
 	float yRot = 0.0f;
 
+    float xChange = 0, yChange = 0, zChange = 0;
+
+	clock_t lastDraw = clock();
+
 	void Init()
 	{
 		loadObjInVAO("object.obj");
@@ -173,12 +177,16 @@ namespace AdvGfxCore
 
 	void Draw()
 	{
+		clock_t startDraw = clock();
+		double duration = (startDraw - lastDraw) / (double) CLOCKS_PER_SEC;
+
+		viewVec+= glm::vec3(xChange * duration, yChange * duration, zChange * duration);
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 		
-
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		viewMatrix = glm::rotate(viewMatrix, yRot, 1.f, 0.f, 0.f);
-		viewMatrix = glm::rotate(viewMatrix, xRot, 0.f, 1.f, 0.f);
+		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(1.f, 0.f, 0.f));
+		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(0.f, 1.f, 0.f));
 		viewMatrix = glm::translate(viewMatrix, -viewVec);
 
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
@@ -189,39 +197,30 @@ namespace AdvGfxCore
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		getErrors();
+
+		lastDraw = clock();
+
+		xChange = yChange = zChange = 0;
 	}
 
-	void MoveCamera(int x, int y, int z)
+	void MoveCamera(float x, float y, float z)
 	{
-		//int viewMatrixLocation = glGetUniformLocation(prog, "view");
-		viewVec += glm::vec3(x,y,z);
-		//viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		//viewMatrix = glm::rotate(viewMatrix, degree, glm::normalize(viewVec));
-		//glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
+		xChange += x;
+		yChange += y;
+		zChange += z;
 	}
 	
 	void RotateCamera(int x, int y)
 	{
-		/*if(x < 0)
-			degree += x;
-		else
-			degree += x;*/
 		xRot -= x;
 		yRot -= y;
-		//int viewMatrixLocation = glGetUniformLocation(prog, "view");
-		//viewMatrix = glm::translate(glm::mat4(1.f), viewVec);
-		//viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(0.f,1.f,0.f));
-		//glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
 	}
 
 	void ResetCamera()
 	{
-		//int viewMatrixLocation = glGetUniformLocation(prog, "view");
 		viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
 		xRot = 0.f;
 		yRot = 0.f;
-		//viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		//glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
 	}
 
 	unsigned int getFileLength(ifstream& file)
