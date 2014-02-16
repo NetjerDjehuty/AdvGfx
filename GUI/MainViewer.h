@@ -92,19 +92,19 @@ namespace GUI {
 				Console::WriteLine("D");
 				break;
 			case Keys::Up:
-				MoveCamera(0, -1, 0);
+				MoveCamera(0, 1, 0);
 				Console::WriteLine("Up");
 				break;
 			case Keys::W:
-				MoveCamera(0, -1, 0);
+				MoveCamera(0, 1, 0);
 				Console::WriteLine("W");
 				break;
 			case Keys::Down:
-				MoveCamera(0, 1, 0);
+				MoveCamera(0, -1, 0);
 				Console::WriteLine("Down");
 				break;
 			case Keys::S:
-				MoveCamera(0, 1, 0);
+				MoveCamera(0, -1, 0);
 				Console::WriteLine("S");
 				break;
 			case Keys::Add: // For zooming
@@ -156,6 +156,7 @@ namespace GUI {
 		protected: 
 			void MoveCamera(int x, int y, int z)
 			{
+				AdvGfxCore::MoveCamera(x,y,z);
 			}
 
 		protected:
