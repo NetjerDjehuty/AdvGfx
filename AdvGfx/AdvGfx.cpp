@@ -83,17 +83,17 @@ namespace AdvGfxCore
 
 	void Init()
 	{
-		loadObjInVAO("object.obj");
+		GLuint vao = loadObjInVAO("object.obj");
 
 		glClearColor(.1f, .2f, .3f, 1.f);
 
 
 		// simple triangle
-		const float vertexPositions[] = {
+		/*const float vertexPositions[] = {
 			0.75f, 0.75f, 0.0f,
 			0.75f, -0.75f, 0.75f,
 			-0.75f, -0.75f, 0.75f,
-		};
+		};*/
 
 		prog = glCreateProgram();
 		GLuint vert = glCreateShader(GL_VERTEX_SHADER);
@@ -140,14 +140,16 @@ namespace AdvGfxCore
 
 		validateProgram(prog);
 		
-		glGenVertexArrays(1, &vao);
+		/*glGenVertexArrays(1, &vao);
 		glBindVertexArray(vao);
 		glGenBuffers(1, &posBuffObj);
 		glBindBuffer(GL_ARRAY_BUFFER, posBuffObj);
 		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
-
+		*/
 		
 		glEnableVertexAttribArray(0);
+		glEnableVertexAttribArray(1);
+		glEnableVertexAttribArray(2);
 
 		int projectionMatrixLocation = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");

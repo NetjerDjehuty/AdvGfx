@@ -13,7 +13,6 @@
 using namespace std;
 
 
-
 GLuint loadObjInVAO(const char* path)
 {
 	// temporary storage for positions, tex coords and normals
@@ -25,9 +24,7 @@ GLuint loadObjInVAO(const char* path)
 	map<string, GLuint> ind_map;
 
 	// indexed storage
-	vector<glm::vec3> pos;
-	vector<glm::vec2> tex;
-	vector<glm::vec3> norm;
+	vector<VertexObject> buffer;
 	vector<GLuint> indices;
 
 	ifstream file(path);
@@ -99,16 +96,43 @@ GLuint loadObjInVAO(const char* path)
 				if (ind_map.count(set[i]))
 				{
 					indices.push_back(ind_map[set[i]]);
+					cout << "Face: " << set[i] << " found in map" << endl;
 				}
 				else
 				{
 					unsigned int i1, i2, i3;
+					int matches = sscanf_s(set[i].c_str(), "%d/%d/%d", &i1, &i2, &i3);
 
+					VertexObject vert = { pos_t[i1 - 1], tex_t[i2 - 1], norm_t[i3 - 1] };
+
+					buffer.push_back(vert);
+
+					GLuint index = buffer.size() - 1;
+					ind_map[set[1]] = index;
+
+					indices.push_back(index);
+					cout << "Face: " << set[i] << " added at index " << index << endl;
 				}
 			}
 		}
 	}
 	file.close();
 
-	return NULL;
+	GLuint vao;
+	GLuint vbo[2];
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glGenBuffers(2, vbo);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexObject) * buffer.size(), buffer.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)* indices.size(), indices.data(), GL_STATIC_DRAW);
+
+	glBindVertexArray(NULL);
+
+	return vao;
 }
