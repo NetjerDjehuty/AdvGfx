@@ -9,7 +9,7 @@ namespace AdvGfxCore
 {
 	void Init();
 	void Draw();
-	void MoveCamera(int x, int y, int z);
+	void MoveCamera(float x, float y, float z);
 	void RotateCamera(int x, int y);
 	void ResetCamera();
 	unsigned int getFileLength(std::ifstream&);
