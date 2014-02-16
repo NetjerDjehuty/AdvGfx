@@ -77,6 +77,7 @@ namespace AdvGfxCore
 	GLuint prog;
 	
 	glm::mat4 viewMatrix;
+	glm::vec3 viewVec;
 
 	void Init()
 	{
@@ -126,7 +127,6 @@ namespace AdvGfxCore
 			glGetObjectParameterivARB(frag, GL_COMPILE_STATUS, &compiled);
 			if(compiled)
 			{
-				cout << "Yesh!" << endl;
 				//continue;
 			}
 		}
@@ -151,8 +151,10 @@ namespace AdvGfxCore
 		int viewMatrixLocation = glGetUniformLocation(prog, "view");
 		int modelMatrixLocation = glGetUniformLocation(prog, "model");
 
+		viewVec = glm::vec3(0.0f, 0.0f, -5.0f);
+
 		glm::mat4 projectionMatrix = glm::perspective(60.0f, 4.f / 3.f, 0.1f, 100.f);  
-		viewMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0.0f, 0.0f, -5.0f));
+		viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
 		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
 
 		glUseProgram(prog);
@@ -175,6 +177,27 @@ namespace AdvGfxCore
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 
 		getErrors();
+	}
+
+	void MoveCamera(int x, int y, int z)
+	{
+		int projectionMatrixLocation = glGetUniformLocation(prog, "projection");
+		int viewMatrixLocation = glGetUniformLocation(prog, "view");
+		int modelMatrixLocation = glGetUniformLocation(prog, "model");
+
+		cout << " x: " << x << " y: " << y << " z: " << z << endl;
+
+		viewVec.operator+=(glm::vec3(x,y,z));
+
+		glm::mat4 projectionMatrix = glm::perspective(60.0f, 4.f / 3.f, 0.1f, 100.f);  
+		viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
+		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+
+		glUseProgram(prog);
+
+		glUniformMatrix4fv(projectionMatrixLocation, 1, false, &projectionMatrix[0][0]);
+		glUniformMatrix4fv(viewMatrixLocation, 1, false, &viewMatrix[0][0]);
+		glUniformMatrix4fv(modelMatrixLocation, 1, false, &modelMatrix[0][0]);
 	}
 
 	unsigned int getFileLength(ifstream& file)
