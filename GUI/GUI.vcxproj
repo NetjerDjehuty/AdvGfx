@@ -113,6 +113,11 @@
     <None Include="basic.frag" />
     <None Include="basic.vert" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="object.obj">
+      <FileType>Document</FileType>
+    </None>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

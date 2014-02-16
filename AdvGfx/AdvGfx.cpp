@@ -3,9 +3,12 @@
 
 #include "stdafx.h"
 #include "AdvGfx.h"
+#include "objLoader.h"
+
 #include <fstream>
 #include <iostream>
 #include <string>
+
 #include <GLM\glm.hpp>
 #include <GLM\ext.hpp>
 
@@ -77,6 +80,8 @@ namespace AdvGfxCore
 
 	void Init()
 	{
+		loadObjInVAO("object.obj");
+
 		glClearColor(.1f, .2f, .3f, 1.f);
 
 

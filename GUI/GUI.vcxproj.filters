@@ -39,5 +39,8 @@
     <None Include="basic.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="object.obj">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
