@@ -102,8 +102,8 @@ GLuint loadObjInVAO(const char* path)
 				}
 				else
 				{
-					
 					unsigned int i1, i2, i3;
+
 				}
 			}
 		}
