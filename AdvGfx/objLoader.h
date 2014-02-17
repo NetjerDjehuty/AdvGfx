@@ -2,12 +2,14 @@
 
 #include "stdafx.h"
 
-struct VertexObject
+
+struct Model
 {
-	glm::vec3 pos;
-	glm::vec2 tex;
-	glm::vec3 norm;
+	GLuint vao;
+	GLuint vbo[2];
+
+	GLuint count;
 };
 
 
-GLuint loadObjInVAO(const char* path);
+Model loadObjInVAO(const char* path);

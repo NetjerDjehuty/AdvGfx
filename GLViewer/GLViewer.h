@@ -27,6 +27,8 @@ namespace GLViewer {
 		event EventHandler^ GLInit;
 		// Occurs when the scene needs to redraw itself
 		event EventHandler^ GLDraw;
+		// Occurs when the screen is resized
+		event EventHandler^ GLResize;
 		// Occurs when a key is down
 		event KeyEventHandler^ GLKeyDown;
 		// Occurs when a mousekey is pressed

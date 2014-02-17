@@ -7,8 +7,9 @@
 
 namespace AdvGfxCore
 {
-	void Init();
+	void Init(int width, int height);
 	void Draw();
+	void Resize(int width, int height);
 	void MoveCamera(float x, float y, float z);
 	void RotateCamera(int x, int y);
 	void ResetCamera();

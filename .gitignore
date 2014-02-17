@@ -4,3 +4,11 @@
 AdvGfx/Debug/
 Debug/
 *.orig
+*.log
+*.lastbuildstate
+AdvGfx/Release/
+GLViewer/Release/
+GUI/Release/
+*.pdb
+*.dll
+Release/
