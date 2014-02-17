@@ -37,6 +37,7 @@ namespace GUI {
 
 			this->glViewer1->GLInit += gcnew System::EventHandler(this, &MainViewer::GLInit);
 			this->glViewer1->GLDraw += gcnew System::EventHandler(this, &MainViewer::GLDraw);
+			this->glViewer1->GLResize += gcnew System::EventHandler(this, &MainViewer::GLResize);
 			this->glViewer1->GLKeyDown += gcnew KeyEventHandler(this, &MainViewer::GLKeyDown);
 			this->glViewer1->GLMouseDown += gcnew MouseEventHandler(this, &MainViewer::GLMouseDown);
 			this->glViewer1->GLMouseScroll += gcnew MouseEventHandler(this, &MainViewer::GLMouseScroll);
@@ -61,12 +62,17 @@ namespace GUI {
 		void GLInit(Object^ sender, EventArgs^ e)
 		{
 			oldLoc = System::Drawing::Point(0.0, 0.0);
-			AdvGfxCore::Init();
+			AdvGfxCore::Init(this->Width, this->Height);
 		}
 
 		void GLDraw(Object^ sender, EventArgs^ e)
 		{
 			AdvGfxCore::Draw();
+		}
+
+		void GLResize(Object^ sender, EventArgs^ e)
+		{
+			AdvGfxCore::Resize(glViewer1->Width, glViewer1->Height);
 		}
 
 		void GLKeyDown(Object^ sender, KeyEventArgs^ e)

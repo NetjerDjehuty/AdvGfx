@@ -2,4 +2,14 @@
 
 #include "stdafx.h"
 
-GLuint loadObjInVAO(const char* path);
+
+struct Model
+{
+	GLuint vao;
+	GLuint vbo[2];
+
+	GLuint count;
+};
+
+
+Model loadObjInVAO(const char* path);

@@ -72,45 +72,34 @@ namespace AdvGfxCore
 		return true;
 	}
 
-	GLuint vao;
-	GLuint posBuffObj;
 	GLuint prog;
-	
+
+	GLuint projLoc;
 	GLuint viewLoc;
+	GLuint modelLoc;
+
+	glm::mat4 modelMatrix;
+
 	glm::vec3 viewVec;
 	float xRot = 0.0f;
 	float yRot = 0.0f;
 
-    float xChange = 0, yChange = 0, zChange = 0;
+	float xChange = 0, yChange = 0, zChange = 0;
 
 	clock_t lastDraw = clock();
 
-	void Init()
+	Model model;
+
+	void Init(int w, int h)
 	{
-		loadObjInVAO("object.obj");
+		model = loadObjInVAO("buddha.obj");
+		glBindVertexArray(model.vao);
 
 		glClearColor(.1f, .2f, .3f, 1.f);
-
-
-		// simple triangle
-		const float vertexPositions[] = {
-			0.75f, 0.75f, 0.0f,
-			0.75f, -0.75f, 0.75f,
-			-0.75f, -0.75f, 0.75f,
-		};
 
 		prog = glCreateProgram();
 		GLuint vert = glCreateShader(GL_VERTEX_SHADER);
 		GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
-
-		//unsigned int vlength = getFileLength(ifstream("basic.vert"));
-		//unsigned int flength = getFileLength(ifstream("basic.frag"));
-
-		//GLint vLength = (GLint) vlength;
-		//GLint fLength = (GLint) flength;
-
-		//const char** vArr = constructArray(ifstream("basic.vert"), vlength);
-		//const char** fArr = constructArray(ifstream("basic.frag"), flength);
 
 		string v = textFileRead("basic.vert");
 		string f = textFileRead("basic.frag");
@@ -120,7 +109,6 @@ namespace AdvGfxCore
 
 		glShaderSource(vert, 1, &vArr, 0);
 		glShaderSource(frag, 1, &fArr, 0);
-		//glShaderSource(frag, 1, flength, fArr);
 
 		glCompileShaderARB(vert);
 		glCompileShaderARB(frag);
@@ -128,12 +116,23 @@ namespace AdvGfxCore
 		GLint compiled;
 
 		glGetObjectParameterivARB(vert, GL_COMPILE_STATUS, &compiled);
-		if(compiled)
+		if (compiled)
 		{
 			glGetObjectParameterivARB(frag, GL_COMPILE_STATUS, &compiled);
-			if(compiled)
+			if (compiled)
 			{
 				//continue;
+			}
+			else
+			{
+				const unsigned int BUFFER_SIZE = 512;
+				char buffer[BUFFER_SIZE];
+				memset(buffer, 0, BUFFER_SIZE);
+				GLsizei length = 0;
+
+				glGetShaderInfoLog(frag, BUFFER_SIZE, &length, buffer);
+
+				cout << buffer << endl;
 			}
 		}
 
@@ -143,33 +142,25 @@ namespace AdvGfxCore
 		glLinkProgram(prog);
 
 		validateProgram(prog);
-		
-		glGenVertexArrays(1, &vao);
-		glBindVertexArray(vao);
-		glGenBuffers(1, &posBuffObj);
-		glBindBuffer(GL_ARRAY_BUFFER, posBuffObj);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertexPositions), vertexPositions, GL_STATIC_DRAW);
 
-		
-		glEnableVertexAttribArray(0);
-
-		int projectionMatrixLocation = glGetUniformLocation(prog, "projection");
+		projLoc = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");
-		int modelMatrixLocation = glGetUniformLocation(prog, "model");
+		modelLoc = glGetUniformLocation(prog, "model");
 
-		viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
+		ResetCamera();
 
-		glm::mat4 projectionMatrix = glm::perspective(60.0f, 4.f / 3.f, 0.1f, 100.f);  
+		glm::mat4 projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		glm::mat4 modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(1.0f));
+		modelMatrix = glm::scale(glm::mat4(1.0f), 1.f, 1.f, 1.f);
 
 		glUseProgram(prog);
 
 
-		glUniformMatrix4fv(projectionMatrixLocation, 1, false, &projectionMatrix[0][0]);
+		glUniformMatrix4fv(projLoc, 1, false, &projectionMatrix[0][0]);
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
-		glUniformMatrix4fv(modelMatrixLocation, 1, false, &modelMatrix[0][0]);
+		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
+		glEnable(GL_CULL_FACE);
 
 		getErrors();
 	}
@@ -178,25 +169,23 @@ namespace AdvGfxCore
 	void Draw()
 	{
 		clock_t startDraw = clock();
-		double duration = (startDraw - lastDraw) / (double) CLOCKS_PER_SEC;
+		double duration = (startDraw - lastDraw) / (double)CLOCKS_PER_SEC;
 
-		cout << duration << endl;
-
-		viewVec+= glm::vec3(xChange * duration, yChange * duration, zChange * duration);
+		viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-		
+
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
 		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(1.f, 0.f, 0.f));
 		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(0.f, 1.f, 0.f));
 		viewMatrix = glm::translate(viewMatrix, -viewVec);
 
-		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
-		
-		
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+		modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
+		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
+
+		glDrawElements(GL_TRIANGLES, model.count, GL_UNSIGNED_INT, NULL);
 
 		getErrors();
 
@@ -205,13 +194,22 @@ namespace AdvGfxCore
 		xChange = yChange = zChange = 0;
 	}
 
+	void Resize(int width, int height)
+	{
+
+		glm::mat4 projectionMatrix = glm::perspective(60.0f, (float)width / height, 0.1f, 100.f);
+		glUniformMatrix4fv(projLoc, 1, false, &projectionMatrix[0][0]);
+
+		glViewport(0, 0, width, height);
+	}
+
 	void MoveCamera(float x, float y, float z)
 	{
 		xChange += x;
 		yChange += y;
 		zChange += z;
 	}
-	
+
 	void RotateCamera(int x, int y)
 	{
 		xRot -= x;
@@ -220,16 +218,16 @@ namespace AdvGfxCore
 
 	void ResetCamera()
 	{
-		viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
+		viewVec = glm::vec3(0.0f, 0.0f, 5.0);
 		xRot = 0.f;
 		yRot = 0.f;
 	}
 
 	unsigned int getFileLength(ifstream& file)
 	{
-		if(!file.good()) return 0;    
-		unsigned int pos=file.tellg();
-		file.seekg(0,ios::end);
+		if (!file.good()) return 0;
+		unsigned int pos = file.tellg();
+		file.seekg(0, ios::end);
 		unsigned int len = file.tellg();
 		file.seekg(ios::beg);
 
@@ -239,11 +237,11 @@ namespace AdvGfxCore
 
 	const char** constructArray(ifstream& file, int length)
 	{
-		char* arr = new char[length+1];
-		if(file.is_open())
+		char* arr = new char[length + 1];
+		if (file.is_open())
 		{
 			int i = 0;
-			while(file.good())
+			while (file.good())
 			{
 				arr[i++] = file.get(); // gets char from line
 			}

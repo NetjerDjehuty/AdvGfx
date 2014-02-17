@@ -351,7 +351,7 @@ namespace GLViewer
 
 	void GLViewer::OnGLResize(Object^ obj, EventArgs^ e)
 	{
-		glViewport(0, 0, Width, Height);
+		GLResize(this, e);
 	}
 
 	void GLViewer::OnGLInit(Object^ obj, EventArgs^ e)

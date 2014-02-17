@@ -1,8 +1,22 @@
 #version 330
 
+in vec3 worldPosition;
+in vec2 texCoord;
+in vec3 normal;
+
 out vec4 fragColor;
+
+vec3 lightPos = vec3(50.0, 50.0, 50.0);
+vec3 ambient = vec3(0.1);
 
 void main()
 {
-    fragColor = vec4(1.0, 0.0, 0.0, 1.0);
+	vec3 n = normalize(normal);
+	vec3 l = normalize(lightPos - worldPosition);
+
+	vec3 diff = vec3(1.0) * max(dot(n,l), 0.0);
+	diff += ambient;
+	diff = clamp(diff, 0.0, 1.0);
+
+    fragColor = vec4(diff, 1.0);
 }
