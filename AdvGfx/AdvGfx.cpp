@@ -92,7 +92,7 @@ namespace AdvGfxCore
 
 	void Init(int w, int h)
 	{
-		model = loadObjInVAO("sponza.obj");
+		model = loadObjInVAO("buddha.obj");
 		glBindVertexArray(model.vao);
 
 		glClearColor(.1f, .2f, .3f, 1.f);
@@ -147,11 +147,11 @@ namespace AdvGfxCore
 		viewLoc = glGetUniformLocation(prog, "view");
 		modelLoc = glGetUniformLocation(prog, "model");
 
-		viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
+		ResetCamera();
 
 		glm::mat4 projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		modelMatrix = glm::scale(glm::mat4(1.0f), .01f, .01f, .01f);
+		modelMatrix = glm::scale(glm::mat4(1.0f), 1.f, 1.f, 1.f);
 
 		glUseProgram(prog);
 
@@ -180,7 +180,7 @@ namespace AdvGfxCore
 		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(0.f, 1.f, 0.f));
 		viewMatrix = glm::translate(viewMatrix, -viewVec);
 
-		modelMatrix = glm::rotate(modelMatrix, (float)duration * 100, 0.f, 1.f, 0.f);
+		modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
@@ -218,7 +218,7 @@ namespace AdvGfxCore
 
 	void ResetCamera()
 	{
-		viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
+		viewVec = glm::vec3(0.0f, 0.0f, 5.0);
 		xRot = 0.f;
 		yRot = 0.f;
 	}
