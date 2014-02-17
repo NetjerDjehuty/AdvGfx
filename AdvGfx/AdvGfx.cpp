@@ -180,6 +180,8 @@ namespace AdvGfxCore
 		clock_t startDraw = clock();
 		double duration = (startDraw - lastDraw) / (double) CLOCKS_PER_SEC;
 
+		cout << duration << endl;
+
 		viewVec+= glm::vec3(xChange * duration, yChange * duration, zChange * duration);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
