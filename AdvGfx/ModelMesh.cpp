@@ -11,5 +11,5 @@ ModelMesh::~ModelMesh()
 
 void ModelMesh::draw()
 {
-	glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, (GLvoid*)_startIndex);
+	glDrawElements(GL_TRIANGLES, _count, GL_UNSIGNED_INT, (GLvoid*)(_startIndex*sizeof(GLuint)));
 }

@@ -1,6 +1,7 @@
 #include "objLoader.h"
 
 #include "Material.h"
+#include "ModelMesh.h"
 
 #include <string>
 #include <vector>
@@ -20,10 +21,96 @@ struct VertexObject
 	glm::vec3 norm;
 };
 
-Model loadObjInVAO(const char* path)
+unordered_map<string, Material> loadMaterial(const char* path)
+{
+	unordered_map<string, GLuint> texMap;
+	unordered_map<string, Material> materials;
+
+	ifstream file(path);
+	if (!file.is_open())
+	{
+		cout << "Could not open file: " << path << endl;
+		return materials;
+	}
+
+
+	string line;
+	Material current;
+	string currentName;
+
+	while (!file.eof())
+	{
+		getline(file, line);
+		istringstream lineStream(line);
+
+		string token;
+		lineStream >> token;
+
+		if(token == "newmtl")
+		{
+			if(!currentName.empty())
+			{
+				materials[currentName] = current;
+
+				cout << "Finalized material: " << currentName << endl;
+			}
+
+			current = Material();
+			lineStream >> currentName;
+
+			cout << "Starting material: " << currentName << endl;
+		}
+		else if (token == "map_Ka")
+		{
+			string texPath;
+			lineStream >> texPath;
+
+			unordered_map<string, GLuint>::iterator it = texMap.find(texPath);
+			if(it == texMap.end())
+			{
+				GLuint tex = SOIL_load_OGL_texture(
+					texPath.c_str(),
+					SOIL_LOAD_AUTO,
+					SOIL_CREATE_NEW_ID,
+					SOIL_FLAG_MIPMAPS);
+
+				if(tex == 0)
+				{
+					cout << "Could not load texture: " << texPath << " : " << SOIL_last_result() << endl;
+				}
+				else
+				{
+					cout << "Texture loaded: " << texPath << endl;
+					texMap[texPath] = tex;
+					current._diffTex = tex;
+				}
+			} else {
+				current._diffTex = it->second;
+			}
+		}
+	}
+
+
+	if(!currentName.empty())
+	{
+		materials[currentName] = current;
+
+		cout << "Finalized material: " << currentName << endl;
+	}
+
+
+	return materials;
+}
+
+Model* loadModel(const char* path)
 {
 	// material library
 	unordered_map<string, Material> materials;
+
+	// mesh library
+	vector<ModelMesh> parts;
+	string activeMat;
+	int objStart = 0;
 
 	// temporary storage for positions, tex coords and normals
 	vector<glm::vec3> pos_t;
@@ -47,8 +134,7 @@ Model loadObjInVAO(const char* path)
 	if (!file.is_open())
 	{
 		cout << "Could not open file: " << path << endl;
-		Model null = { 0, { 0, 0 }, 0 };
-		return null;
+		return NULL;
 	}
 
 
@@ -154,13 +240,6 @@ Model loadObjInVAO(const char* path)
 			}
 
 		}
-		else if (token == "g")
-		{
-			string name;
-			lineStream >> name;
-
-			cout << "Group started: " << name << endl;
-		}
 		else if (token == "mtllib")
 		{
 			string path;
@@ -168,20 +247,31 @@ Model loadObjInVAO(const char* path)
 
 			materials = loadMaterial(path.c_str());
 		}
+		else if (token == "usemtl")
+		{
+			if(!activeMat.empty())
+			{
+				ModelMesh next = ModelMesh(activeMat, objStart, indices.size() - objStart);
+				parts.push_back(next);
+			}
+
+			lineStream >> activeMat;
+			objStart = indices.size();
+		}
 	}
 	file.close();
 
-	Model m;
+	ModelMesh next = ModelMesh(activeMat, objStart, indices.size() - objStart);
+	parts.push_back(next);
 
-	glGenVertexArrays(1, &m.vao);
-	glBindVertexArray(m.vao);
+	Model* m = new Model();
 
-	glGenBuffers(2, m.vbo);
+	glBindVertexArray(m->_vao[0]);
 
-	glBindBuffer(GL_ARRAY_BUFFER, m.vbo[0]);
+	glBindBuffer(GL_ARRAY_BUFFER, m->_vbo[0]);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(VertexObject)* buffer.size(), buffer.data(), GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m.vbo[1]);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m->_vbo[1]);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint)* indices.size(), indices.data(), GL_STATIC_DRAW);
 
 	glEnableVertexAttribArray(0);
@@ -194,85 +284,8 @@ Model loadObjInVAO(const char* path)
 
 	glBindVertexArray(NULL);
 
-	m.count = indices.size();
+	m->_materials = materials;
+	m->_modelParts = parts;
 
 	return m;
-}
-
-unordered_map<string, Material> loadMaterial(const char* path)
-{
-	unordered_map<string, GLuint> texMap;
-	unordered_map<string, Material> materials;
-
-	ifstream file(path);
-	if (!file.is_open())
-	{
-		cout << "Could not open file: " << path << endl;
-		return materials;
-	}
-
-
-	string line;
-	Material current;
-	string currentName;
-
-	while (!file.eof())
-	{
-		getline(file, line);
-		istringstream lineStream(line);
-
-		string token;
-		lineStream >> token;
-
-		if(token == "newmtl")
-		{
-			if(!currentName.empty())
-			{
-				materials[currentName] = current;
-
-				cout << "Finalized material: " << currentName << endl;
-			}
-
-			current = Material();
-			lineStream >> currentName;
-
-			cout << "Starting material: " << currentName << endl;
-		}
-		else if (token == "map_Ka")
-		{
-			string texPath;
-			lineStream >> texPath;
-
-			unordered_map<string, GLuint>::iterator it = texMap.find(texPath);
-			if(it == texMap.end())
-			{
-				GLuint tex = SOIL_load_OGL_texture(
-					texPath.c_str(),
-					SOIL_LOAD_AUTO,
-					SOIL_CREATE_NEW_ID,
-					SOIL_FLAG_MIPMAPS);
-
-				if(tex == 0)
-				{
-					cout << "Could not load texture: " << texPath << " : " << SOIL_last_result() << endl;
-				}
-				else
-				{
-					cout << "Texture loaded: " << texPath << endl;
-					texMap[texPath] = tex;
-				}
-			}
-		}
-	}
-
-
-	if(!currentName.empty())
-	{
-		materials[currentName] = current;
-
-		cout << "Finalized material: " << currentName << endl;
-	}
-
-
-	return materials;
 }

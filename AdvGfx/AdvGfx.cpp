@@ -90,12 +90,11 @@ namespace AdvGfxCore
 
 	clock_t lastDraw = clock();
 
-	Model model;
+	Model* model;
 
 	void Init(int w, int h)
 	{
-		model = loadObjInVAO("sponza.obj");
-		glBindVertexArray(model.vao);
+		model = loadModel("tank.obj");
 
 		glClearColor(.1f, .2f, .3f, 1.f);
 
@@ -145,6 +144,8 @@ namespace AdvGfxCore
 
 		validateProgram(prog);
 
+		model->setProgram(prog);
+
 		projLoc = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");
 		modelLoc = glGetUniformLocation(prog, "model");
@@ -191,8 +192,8 @@ namespace AdvGfxCore
 
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
-
-		glDrawElements(GL_TRIANGLES, model.count, GL_UNSIGNED_INT, NULL);
+		
+		model->draw();
 
 		getErrors();
 
@@ -224,22 +225,22 @@ namespace AdvGfxCore
 		switch (m)
 		{
 		case AdvGfxCore::Up:
-			movement.y = ((int)!stop) * 1;
+			movement.y = (float)((int)!stop) * 1;
 			break;
 		case AdvGfxCore::Down:
-			movement.y = ((int)!stop) * -1;
+			movement.y = (float)((int)!stop) * -1;
 			break;
 		case AdvGfxCore::Left:
-			movement.x = ((int)!stop) * -1;
+			movement.x = (float)((int)!stop) * -1;
 			break;
 		case AdvGfxCore::Right:
-			movement.x = ((int)!stop) * 1;
+			movement.x = (float)((int)!stop) * 1;
 			break;
 		case AdvGfxCore::Forward:
-			movement.z = ((int)!stop) * -1;
+			movement.z = (float)((int)!stop) * -1;
 			break;
 		case AdvGfxCore::Backward:
-			movement.z = ((int)!stop) * 1;
+			movement.z = (float)((int)!stop) * 1;
 			break;
 		}
 	}
@@ -260,9 +261,9 @@ namespace AdvGfxCore
 	unsigned int getFileLength(ifstream& file)
 	{
 		if (!file.good()) return 0;
-		unsigned int pos = file.tellg();
+		int pos = file.tellg();
 		file.seekg(0, ios::end);
-		unsigned int len = file.tellg();
+		int len = file.tellg();
 		file.seekg(ios::beg);
 
 		cout << len << '\n';

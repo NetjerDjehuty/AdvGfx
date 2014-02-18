@@ -3,15 +3,7 @@
 #include "stdafx.h"
 #include <unordered_map>
 #include "Material.h"
+#include "Model.h"
 
-struct Model
-{
-	GLuint vao;
-	GLuint vbo[2];
-
-	GLuint count;
-};
-
-
-Model loadObjInVAO(const char* path);
+Model* loadModel(const char* path);
 std::unordered_map<std::string, Material> loadMaterial(const char* path);

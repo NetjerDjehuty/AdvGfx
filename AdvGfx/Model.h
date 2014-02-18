@@ -20,6 +20,8 @@ public:
 	glm::mat4 getModelMatrix() { return _mm; }
 	void setModelMatrix(glm::mat4 modelMatrix) { _mm = modelMatrix; }
 
+	void setProgram(unsigned int prog) { _prog = prog; }
+
 	void draw();
 private:
 
@@ -39,5 +41,8 @@ private:
 	// Model Matrix
 	glm::mat4 _mm;
 
-	friend Model loadModel(const char* path);
+	friend Model* loadModel(const char* path);
+
+private:
+	Model(const Model& other);
 };
