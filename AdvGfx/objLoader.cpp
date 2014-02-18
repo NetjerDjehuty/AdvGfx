@@ -102,7 +102,7 @@ Model loadObjInVAO(const char* path)
 			for (int j = 0; j < 2; ++j)
 			{
 				if (j == 1 && set[3].size() == 0)
-					break;
+					continue;
 
 				for (int i = 0; i < 3; ++i)
 				{

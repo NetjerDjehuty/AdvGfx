@@ -92,7 +92,7 @@ namespace AdvGfxCore
 
 	void Init(int w, int h)
 	{
-		model = loadObjInVAO("buddha.obj");
+		model = loadObjInVAO("tank.obj");
 		glBindVertexArray(model.vao);
 
 		glClearColor(.1f, .2f, .3f, 1.f);
@@ -151,7 +151,7 @@ namespace AdvGfxCore
 
 		glm::mat4 projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
 		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		modelMatrix = glm::scale(glm::mat4(1.0f), 1.f, 1.f, 1.f);
+		modelMatrix = glm::scale(glm::mat4(1.0f), 0.01f, 0.01f, 0.01f);
 
 		glUseProgram(prog);
 
@@ -161,6 +161,7 @@ namespace AdvGfxCore
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
 		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
 
 		getErrors();
 	}
@@ -189,7 +190,7 @@ namespace AdvGfxCore
 
 		getErrors();
 
-		lastDraw = clock();
+		lastDraw = startDraw;
 
 		xChange = yChange = zChange = 0;
 	}
