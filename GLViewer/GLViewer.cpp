@@ -60,6 +60,7 @@ namespace GLViewer
 			_renderThread->Join();
 	}
 
+
 	void GLViewer::InitContext(HWND WindowHandle)
 	{
 		// We want to create an OpenGL 3.0 or greater context (preferably 4.0 or greater). For this we first need to create a dummy context.
@@ -386,7 +387,7 @@ namespace GLViewer
 	{
 		GLMouseScroll(this, e);
 	}
-	
+
 	void GLViewer::OnGLMouseMove(Object^ obj, MouseEventArgs^ e)
 	{	
 		GLMouseMove(this, e);

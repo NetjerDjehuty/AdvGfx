@@ -1,8 +1,9 @@
 #include "objLoader.h"
 
+#include "Material.h"
+
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 #include <iostream>
 #include <fstream>
@@ -21,6 +22,9 @@ struct VertexObject
 
 Model loadObjInVAO(const char* path)
 {
+	// material library
+	unordered_map<string, Material> materials;
+
 	// temporary storage for positions, tex coords and normals
 	vector<glm::vec3> pos_t;
 	vector<glm::vec2> tex_t;
@@ -157,6 +161,13 @@ Model loadObjInVAO(const char* path)
 
 			cout << "Group started: " << name << endl;
 		}
+		else if (token == "mtllib")
+		{
+			string path;
+			lineStream >> path;
+
+			materials = loadMaterial(path.c_str());
+		}
 	}
 	file.close();
 
@@ -186,4 +197,82 @@ Model loadObjInVAO(const char* path)
 	m.count = indices.size();
 
 	return m;
+}
+
+unordered_map<string, Material> loadMaterial(const char* path)
+{
+	unordered_map<string, GLuint> texMap;
+	unordered_map<string, Material> materials;
+
+	ifstream file(path);
+	if (!file.is_open())
+	{
+		cout << "Could not open file: " << path << endl;
+		return materials;
+	}
+
+
+	string line;
+	Material current;
+	string currentName;
+
+	while (!file.eof())
+	{
+		getline(file, line);
+		istringstream lineStream(line);
+
+		string token;
+		lineStream >> token;
+
+		if(token == "newmtl")
+		{
+			if(!currentName.empty())
+			{
+				materials[currentName] = current;
+
+				cout << "Finalized material: " << currentName << endl;
+			}
+
+			current = Material();
+			lineStream >> currentName;
+
+			cout << "Starting material: " << currentName << endl;
+		}
+		else if (token == "map_Ka")
+		{
+			string texPath;
+			lineStream >> texPath;
+
+			unordered_map<string, GLuint>::iterator it = texMap.find(texPath);
+			if(it == texMap.end())
+			{
+				GLuint tex = SOIL_load_OGL_texture(
+					texPath.c_str(),
+					SOIL_LOAD_AUTO,
+					SOIL_CREATE_NEW_ID,
+					SOIL_FLAG_MIPMAPS);
+
+				if(tex == 0)
+				{
+					cout << "Could not load texture: " << texPath << " : " << SOIL_last_result() << endl;
+				}
+				else
+				{
+					cout << "Texture loaded: " << texPath << endl;
+					texMap[texPath] = tex;
+				}
+			}
+		}
+	}
+
+
+	if(!currentName.empty())
+	{
+		materials[currentName] = current;
+
+		cout << "Finalized material: " << currentName << endl;
+	}
+
+
+	return materials;
 }

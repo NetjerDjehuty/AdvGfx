@@ -2,9 +2,13 @@
 
 #include "ModelMesh.h"
 
+#include "Material.h"
+
 #include <glm/glm.hpp>
 
 #include <vector>
+#include <string>
+#include <unordered_map>
 
 
 class Model
@@ -20,6 +24,9 @@ public:
 private:
 
 	std::vector<ModelMesh> _modelParts;
+	std::unordered_map<std::string, Material> _materials;
+
+	std::string _currMat;
 
 	// Vertex Array Object
 	unsigned int _vao[1];

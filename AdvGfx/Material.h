@@ -2,6 +2,9 @@
 
 #include <glm\glm.hpp>
 
+#include <string>
+#include <unordered_map>
+
 enum IllumModel : char
 {
 	Color = 0,
@@ -20,10 +23,11 @@ enum IllumModel : char
 class Material
 {
 public:
+	void setMaterial(unsigned int prog);
 
-	void setMaterial();
+	const std::string& getName() {return _name;}
 private:
-	char _name[256];
+	std::string _name;
 
 	glm::vec3 _ambColor;
 	glm::vec3 _diffColor;
@@ -41,4 +45,6 @@ private:
 	unsigned int _specPowerTex;
 	unsigned int _transTex;
 	unsigned int _decalTex;
+
+	friend std::unordered_map<std::string, Material> loadMaterial(const char* path);
 };

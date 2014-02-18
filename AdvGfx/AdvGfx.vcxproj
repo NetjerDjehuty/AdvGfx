@@ -82,6 +82,7 @@
   <ItemGroup>
     <ClCompile Include="AdvGfx.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="ModelMesh.cpp" />
     <ClCompile Include="objLoader.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

@@ -19,6 +19,6 @@
 
 #include <SOIL.h>
 
-#pragma comment(lib, "libSOIL.lib")
+#pragma comment(lib, "SOIL.lib")
 
 #include <glm\glm.hpp>

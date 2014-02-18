@@ -94,7 +94,7 @@ namespace AdvGfxCore
 
 	void Init(int w, int h)
 	{
-		model = loadObjInVAO("tank.obj");
+		model = loadObjInVAO("sponza.obj");
 		glBindVertexArray(model.vao);
 
 		glClearColor(.1f, .2f, .3f, 1.f);
@@ -187,7 +187,7 @@ namespace AdvGfxCore
 		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(0.f, 1.f, 0.f));
 		viewMatrix = glm::translate(viewMatrix, -viewVec);
 
-		modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
+		//modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);

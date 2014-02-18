@@ -2,7 +2,7 @@
 
 #include "stdafx.h"
 
-Model::Model() : _vao{ 0 }, _vbo{ 0, 0 }, _prog(0), _mm(glm::mat4(1.0f))
+Model::Model() :  _prog(0), _mm(glm::mat4(1.0f))
 {
 	glGenVertexArrays(1, _vao);
 	glBindVertexArray(_vao[0]);
