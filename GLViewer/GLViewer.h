@@ -31,6 +31,8 @@ namespace GLViewer {
 		event EventHandler^ GLResize;
 		// Occurs when a key is down
 		event KeyEventHandler^ GLKeyDown;
+		// Occurs when a key is up
+		event KeyEventHandler^ GLKeyUp;
 		// Occurs when a mousekey is pressed
 		event MouseEventHandler^ GLMouseDown;
 		// Occurs when the mousewheel is scrolled
@@ -115,6 +117,7 @@ namespace GLViewer {
 		virtual void OnResize(EventArgs^ e) override;
 		virtual void OnLoad(EventArgs^ e) override;
 		virtual void OnKeyDown(KeyEventArgs^ e) override;
+		virtual void OnKeyUp(KeyEventArgs^ e) override;
 		virtual void OnMouseDown(MouseEventArgs^ e) override;
 		virtual void OnMouseWheel(MouseEventArgs^ e) override;
 		virtual void OnMouseMove(MouseEventArgs^ e) override;
@@ -130,6 +133,7 @@ namespace GLViewer {
 		virtual void OnGLDraw(Object^ obj, EventArgs^ e);
 		virtual void OnGLResize(Object^ obj, EventArgs^ e);
 		virtual void OnGLKeyDown(Object^ obj, KeyEventArgs^ e);
+		virtual void OnGLKeyUp(Object^ obj, KeyEventArgs^ e);
 		virtual void OnGLMouseDown(Object^ obj, MouseEventArgs^ e);
 		virtual void OnGLMouseScroll(Object^ obj, MouseEventArgs^ e);
 		virtual void OnGLMouseMove(Object^ obj, MouseEventArgs^ e);

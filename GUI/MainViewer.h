@@ -39,6 +39,7 @@ namespace GUI {
 			this->glViewer1->GLDraw += gcnew System::EventHandler(this, &MainViewer::GLDraw);
 			this->glViewer1->GLResize += gcnew System::EventHandler(this, &MainViewer::GLResize);
 			this->glViewer1->GLKeyDown += gcnew KeyEventHandler(this, &MainViewer::GLKeyDown);
+			this->glViewer1->GLKeyUp += gcnew KeyEventHandler(this, &MainViewer::GLKeyUp);
 			this->glViewer1->GLMouseDown += gcnew MouseEventHandler(this, &MainViewer::GLMouseDown);
 			this->glViewer1->GLMouseScroll += gcnew MouseEventHandler(this, &MainViewer::GLMouseScroll);
 			this->glViewer1->GLMouseMove += gcnew MouseEventHandler(this, &MainViewer::GLMouseMove);
@@ -77,20 +78,71 @@ namespace GUI {
 
 		void GLKeyDown(Object^ sender, KeyEventArgs^ e)
 		{
-			if(e->KeyCode == Keys::Left || e->KeyCode == Keys::A)
-				MoveCamera(-10.f, .0f, .0f);
-			if(e->KeyCode == Keys::Right || e->KeyCode == Keys::D)
-				MoveCamera(10.f, .0f, .0f);
-			if(e->KeyCode == Keys::Up || e->KeyCode == Keys::W)
-				MoveCamera(.0f, 10.f, .0f);
-			if(e->KeyCode == Keys::Down || e->KeyCode == Keys::S)
-				MoveCamera(.0f, -10.f, .0f);
-			if(e->KeyCode == Keys::R)
-				ResetCamera();
-			if(e->KeyCode == Keys::Subtract)
-				MoveCamera(.0f, .0f, -10.f);
-			if(e->KeyCode == Keys::Add)
-				MoveCamera(.0f, .0f, 10.f);
+			switch (e->KeyCode)
+			{
+			case Keys::Left :
+			case Keys::A:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Left, false);
+				break;
+			case Keys::Right:
+			case Keys::D:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Right, false);
+				break;
+			case Keys::Up:
+			case Keys::W:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Forward, false);
+				break;
+			case Keys::Down:
+			case Keys::S:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Backward, false);
+				break;
+			case Keys::R:
+				AdvGfxCore::ResetCamera();
+				break;
+			case Keys::Subtract:
+			case Keys::Z:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Down, false);
+				break;
+			case Keys::Add:
+			case Keys::Q:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Up, false);
+				break;
+			}
+		}
+
+		void GLKeyUp(Object^ sender, KeyEventArgs^ e)
+		{
+
+			switch (e->KeyCode)
+			{
+			case Keys::Left:
+			case Keys::A:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Left, true);
+				break;
+			case Keys::Right:
+			case Keys::D:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Right, true);
+				break;
+			case Keys::Up:
+			case Keys::W:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Forward, true);
+				break;
+			case Keys::Down:
+			case Keys::S:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Backward, true);
+				break;
+			case Keys::R:
+				AdvGfxCore::ResetCamera();
+				break;
+			case Keys::Subtract:
+			case Keys::Z:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Down, true);
+				break;
+			case Keys::Add:
+			case Keys::Q:
+				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Up, true);
+				break;
+			}
 		}
 
 		void GLMouseDown(Object^ sender, MouseEventArgs^ e)
@@ -117,9 +169,9 @@ namespace GUI {
 		{
 			Console::WriteLine("Scrolled? Yup {0} degree", e->Delta);
 			if(e->Delta < 0)
-				MoveCamera(.0f,.0f,-.1f);
+				AdvGfxCore::MoveCamera(.0f,.0f,-.1f);
 			else
-				MoveCamera(.0f,.0f,.1f);
+				AdvGfxCore::MoveCamera(.0f,.0f,.1f);
 		}
 
 		void GLMouseMove(Object^ sender, MouseEventArgs^ e)
@@ -134,18 +186,6 @@ namespace GUI {
 			oldLoc = newLoc;
 		}
 
-
-		protected: 
-			void MoveCamera(float x, float y, float z)
-			{
-				AdvGfxCore::MoveCamera(x,y,z);
-			}
-
-		protected:
-			void ResetCamera()
-			{
-				AdvGfxCore::ResetCamera();
-			}
 
 		/// <summary>
 		/// Required designer variable.

@@ -73,6 +73,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AdvGfx.h" />
+    <ClInclude Include="Model.h" />
     <ClInclude Include="objLoader.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>

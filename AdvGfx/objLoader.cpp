@@ -2,7 +2,7 @@
 
 #include <string>
 #include <vector>
-#include <map>
+#include <unordered_map>
 
 #include <iostream>
 #include <fstream>
@@ -32,7 +32,8 @@ Model loadObjInVAO(const char* path)
 	norm_t.reserve(10000);
 
 	// map for storing temporary indices
-	map<string, GLuint> ind_map;
+	unordered_map<string, GLuint> ind_map;
+	ind_map.reserve(10000);
 
 	// indexed storage
 	vector<VertexObject> buffer;
@@ -108,9 +109,11 @@ Model loadObjInVAO(const char* path)
 				{
 					int id = idx[j][i];
 
-					if (ind_map.count(set[id]))
+					unordered_map<string, GLuint>::iterator it = ind_map.find(set[id]);
+
+					if (it != ind_map.end())
 					{
-						indices.push_back(ind_map[set[id]]);
+						indices.push_back(it->second);
 						//cout << "Face: " << set[i] << " found in map" << endl;
 					}
 					else

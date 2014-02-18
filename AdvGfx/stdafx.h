@@ -17,4 +17,8 @@
 #pragma comment(lib, "glu32.lib")
 #pragma comment(lib, "glew32.lib")
 
+#include <SOIL.h>
+
+#pragma comment(lib, "libSOIL.lib")
+
 #include <glm\glm.hpp>

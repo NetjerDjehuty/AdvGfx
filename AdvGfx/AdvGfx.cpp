@@ -72,6 +72,8 @@ namespace AdvGfxCore
 		return true;
 	}
 
+	glm::vec3 movement;
+
 	GLuint prog;
 
 	GLuint projLoc;
@@ -170,15 +172,19 @@ namespace AdvGfxCore
 	void Draw()
 	{
 		clock_t startDraw = clock();
-		double duration = (startDraw - lastDraw) / (double)CLOCKS_PER_SEC;
+		float duration = (startDraw - lastDraw) / (float)CLOCKS_PER_SEC;
 
-		viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
+		//viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
+		glm::vec3 finalMovement = 10 * duration * movement;
+		finalMovement = glm::rotateX(finalMovement, -xRot);
+		finalMovement = glm::rotateY(finalMovement, -yRot);
+		viewVec += finalMovement;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
 		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(1.f, 0.f, 0.f));
-		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(0.f, 1.f, 0.f));
+		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(1.f, 0.f, 0.f));
+		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(0.f, 1.f, 0.f));
 		viewMatrix = glm::translate(viewMatrix, -viewVec);
 
 		modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
@@ -204,17 +210,44 @@ namespace AdvGfxCore
 		glViewport(0, 0, width, height);
 	}
 
+
+
 	void MoveCamera(float x, float y, float z)
 	{
-		xChange += x;
-		yChange += y;
-		zChange += z;
+		xChange = x;
+		yChange = y;
+		zChange = z;
+	}
+
+	void MoveCamera(Movement m, bool stop)
+	{
+		switch (m)
+		{
+		case AdvGfxCore::Up:
+			movement.y = ((int)!stop) * 1;
+			break;
+		case AdvGfxCore::Down:
+			movement.y = ((int)!stop) * -1;
+			break;
+		case AdvGfxCore::Left:
+			movement.x = ((int)!stop) * -1;
+			break;
+		case AdvGfxCore::Right:
+			movement.x = ((int)!stop) * 1;
+			break;
+		case AdvGfxCore::Forward:
+			movement.z = ((int)!stop) * -1;
+			break;
+		case AdvGfxCore::Backward:
+			movement.z = ((int)!stop) * 1;
+			break;
+		}
 	}
 
 	void RotateCamera(int x, int y)
 	{
-		xRot -= x;
-		yRot -= y;
+		xRot -= y;
+		yRot -= x;
 	}
 
 	void ResetCamera()
