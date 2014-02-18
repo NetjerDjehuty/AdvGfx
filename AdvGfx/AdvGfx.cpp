@@ -94,7 +94,6 @@ namespace AdvGfxCore
 
 	void Init(int w, int h)
 	{
-		model = loadModel("tank.obj");
 
 		glClearColor(.1f, .2f, .3f, 1.f);
 
@@ -143,8 +142,8 @@ namespace AdvGfxCore
 		glLinkProgram(prog);
 
 		validateProgram(prog);
-
-		model->setProgram(prog);
+		
+		model = loadModel("sponza.obj", prog);
 
 		projLoc = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");
@@ -166,7 +165,9 @@ namespace AdvGfxCore
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
+		
 		getErrors();
+
 	}
 
 
@@ -192,10 +193,10 @@ namespace AdvGfxCore
 
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
-		
+
 		model->draw();
 
-		getErrors();
+		//getErrors();
 
 		lastDraw = startDraw;
 

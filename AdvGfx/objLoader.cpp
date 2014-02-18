@@ -60,7 +60,7 @@ unordered_map<string, Material> loadMaterial(const char* path)
 
 			cout << "Starting material: " << currentName << endl;
 		}
-		else if (token == "map_Ka")
+		else if (token == "map_Kd")
 		{
 			string texPath;
 			lineStream >> texPath;
@@ -72,7 +72,7 @@ unordered_map<string, Material> loadMaterial(const char* path)
 					texPath.c_str(),
 					SOIL_LOAD_AUTO,
 					SOIL_CREATE_NEW_ID,
-					SOIL_FLAG_MIPMAPS);
+					SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
 
 				if(tex == 0)
 				{
@@ -102,7 +102,7 @@ unordered_map<string, Material> loadMaterial(const char* path)
 	return materials;
 }
 
-Model* loadModel(const char* path)
+Model* loadModel(const char* path, GLuint program)
 {
 	// material library
 	unordered_map<string, Material> materials;
@@ -240,6 +240,13 @@ Model* loadModel(const char* path)
 			}
 
 		}
+		else if (token == "g")
+		{
+			string name;
+			lineStream >> name;
+
+			cout << "Group started: " << name << endl;
+		}
 		else if (token == "mtllib")
 		{
 			string path;
@@ -265,6 +272,8 @@ Model* loadModel(const char* path)
 	parts.push_back(next);
 
 	Model* m = new Model();
+
+	m->_prog = program;
 
 	glBindVertexArray(m->_vao[0]);
 

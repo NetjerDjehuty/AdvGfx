@@ -36,4 +36,5 @@ void Model::draw()
 
 	glBindVertexArray(NULL);
 	_currMat = "";
+
 }
