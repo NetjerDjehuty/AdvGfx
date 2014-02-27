@@ -8,6 +8,9 @@
 
 #include "../AdvGfx/AdvGfx.h"
 
+
+#include <msclr\marshal_cppstd.h>
+
 namespace GUI {
 
 	using namespace System;
@@ -58,7 +61,9 @@ namespace GUI {
 		}
 	private: System::Windows::Forms::SplitContainer^  splitContainer1;
 	private: GLViewer::GLViewer^ glViewer1;
-	System::Drawing::Point oldLoc;
+	private: System::Windows::Forms::Button^  button1;
+	private: System::Windows::Forms::OpenFileDialog^  openFileDialog1;
+			 System::Drawing::Point oldLoc;
 	private:
 		void GLInit(Object^ sender, EventArgs^ e)
 		{
@@ -200,7 +205,10 @@ namespace GUI {
 		void InitializeComponent(void)
 		{
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
+			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
+			this->button1 = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->BeginInit();
+			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
 			this->SuspendLayout();
 			// 
@@ -209,9 +217,27 @@ namespace GUI {
 			this->splitContainer1->Dock = System::Windows::Forms::DockStyle::Fill;
 			this->splitContainer1->Location = System::Drawing::Point(0, 0);
 			this->splitContainer1->Name = L"splitContainer1";
+			// 
+			// splitContainer1.Panel2
+			// 
+			this->splitContainer1->Panel2->Controls->Add(this->button1);
 			this->splitContainer1->Size = System::Drawing::Size(675, 503);
 			this->splitContainer1->SplitterDistance = 555;
 			this->splitContainer1->TabIndex = 0;
+			// 
+			// openFileDialog1
+			// 
+			this->openFileDialog1->Filter = L"Obj file (*.obj)|*.obj";
+			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(17, 468);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(75, 23);
+			this->button1->TabIndex = 0;
+			this->button1->Text = L"button1";
+			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &MainViewer::button1_Click);
 			// 
 			// MainViewer
 			// 
@@ -221,11 +247,30 @@ namespace GUI {
 			this->Controls->Add(this->splitContainer1);
 			this->Name = L"MainViewer";
 			this->Text = L"MainViewer";
+			this->splitContainer1->Panel2->ResumeLayout(false);
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->EndInit();
 			this->splitContainer1->ResumeLayout(false);
 			this->ResumeLayout(false);
 
 		}
 #pragma endregion
+	private: 
+
+		void LoadEvent(Object^ sender, EventArgs^ e)
+		{
+			std::string path = msclr::interop::marshal_as<std::string>(openFileDialog1->SafeFileName);
+			AdvGfxCore::load(path.c_str());
+		}
+
+		System::Void button1_Click(System::Object^  sender, System::EventArgs^  e) {
+
+			System::Windows::Forms::DialogResult result = openFileDialog1->ShowDialog();
+			if(result == System::Windows::Forms::DialogResult::OK)
+			{
+				
+				this->glViewer1->QueueActions(gcnew EventHandler(this, &GUI::MainViewer::LoadEvent), this, e);
+				this->glViewer1->Focus();
+			}
+		}
 	};
 }

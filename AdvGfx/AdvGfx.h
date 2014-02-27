@@ -27,4 +27,5 @@ namespace AdvGfxCore
 	void ResetCamera();
 	unsigned int getFileLength(std::ifstream&);
 	const char** constructArray(std::ifstream& file, int length);
+	void load(const char* path);
 }

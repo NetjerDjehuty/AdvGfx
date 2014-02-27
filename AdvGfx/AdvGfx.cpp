@@ -90,7 +90,8 @@ namespace AdvGfxCore
 
 	clock_t lastDraw = clock();
 
-	Model* model;
+	Model* model = NULL;
+	Model* model2 = NULL;
 
 	void Init(int w, int h)
 	{
@@ -142,8 +143,7 @@ namespace AdvGfxCore
 		glLinkProgram(prog);
 
 		validateProgram(prog);
-		
-		model = loadModel("sponza.obj", prog);
+
 
 		projLoc = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");
@@ -165,7 +165,7 @@ namespace AdvGfxCore
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
-		
+
 		getErrors();
 
 	}
@@ -194,7 +194,8 @@ namespace AdvGfxCore
 		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
-		model->draw();
+		if(model)
+			model->draw();
 
 		//getErrors();
 
@@ -287,5 +288,13 @@ namespace AdvGfxCore
 
 		const char* returnArray = arr;
 		return &returnArray;
+	}
+
+	void load(const char* path)
+	{
+		if(model)
+			delete model;
+
+		model = loadModel(path, prog);
 	}
 }

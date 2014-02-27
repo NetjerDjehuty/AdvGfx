@@ -46,6 +46,10 @@ namespace GLViewer {
 		virtual void Refresh() override;
 		void SwapBackBuffers();
 
+		
+		// Enqueue an action to be performed on the rendering thread
+		void QueueActions(Delegate^ AsyncAction, ... array<Object^>^ Args);
+
 	private:
 
 		// Initializes the OpenGL context
@@ -62,8 +66,6 @@ namespace GLViewer {
 		// The delegate for the rendering thread
 		void Execute(Object^ WindowHandle);
 
-		// Enqueue an action to be performed on the rendering thread
-		void QueueActions(Delegate^ AsyncAction, ... array<Object^>^ Args);
 		// Runs all enqueued actions
 		void RunActions();
 
