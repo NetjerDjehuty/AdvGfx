@@ -8,12 +8,45 @@
 
 using namespace AdvGfxCore;
 
+struct material
+{
+	glm::vec4 color;
+};
+
+
+struct sphere
+{
+	material mat;
+	glm::vec3 pos;
+	float radius;
+};
+
+struct triangle
+{
+	material mat;
+	glm::vec3 v0, v1, v2;
+};
+
+struct plane
+{
+	material mat;
+	glm::vec3 normal, point;
+};
+
+struct light
+{
+	glm::vec3 location;
+	glm::vec4 color;
+	glm::vec3 dir;
+};
+
 struct objects
 {
 	sphere *spheres;
 	plane *planes;
+	light *lights;
 
-	int nrPlanes, nrSpheres;
+	int nrPlanes, nrSpheres, nrLights;
 };
 
 struct ray
@@ -37,6 +70,8 @@ public:
 	bool rayTriangleIntersection(triangle* t, ray* r);
 	bool raySphereIntersection(sphere* s, ray* r, float* f);
 	bool rayPlaneIntersection(plane* p, ray* r, float* f);
+	float intersect(ray *r, objects *scene, void** obj, int *type);
+	glm::vec4 traceRay(ray* ray, objects* scene );
 	pixel* shootRay(camera c);
 };
 

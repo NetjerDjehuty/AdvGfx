@@ -216,8 +216,8 @@ namespace GUI {
 			// splitContainer1.Panel2
 			// 
 			this->splitContainer1->Panel2->Controls->Add(this->button1);
-			this->splitContainer1->Size = System::Drawing::Size(675, 503);
-			this->splitContainer1->SplitterDistance = 555;
+			this->splitContainer1->Size = System::Drawing::Size(1482, 720);
+			this->splitContainer1->SplitterDistance = 1280;
 			this->splitContainer1->TabIndex = 0;
 			// 
 			// button1
@@ -238,7 +238,7 @@ namespace GUI {
 			// 
 			this->AutoScaleDimensions = System::Drawing::SizeF(8, 16);
 			this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
-			this->ClientSize = System::Drawing::Size(675, 503);
+			this->ClientSize = System::Drawing::Size(1482, 720);
 			this->Controls->Add(this->splitContainer1);
 			this->Name = L"MainViewer";
 			this->Text = L"MainViewer";

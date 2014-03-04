@@ -1,8 +1,10 @@
 #version 330
 
+layout(location = 0)in vec2 vertexIn;
+
 const vec2 madd=vec2(0.5,0.5);
-attribute vec2 vertexIn;
-varying vec2 textureCoord;
+
+out vec2 textureCoord;
 
 void main() 
 {
