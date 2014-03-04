@@ -202,7 +202,7 @@ namespace AdvGfxCore
 		p.b = 0;
 		p.g = 0;
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		glDrawArrays(GL_TRIANGLES, 0, 2);
 
