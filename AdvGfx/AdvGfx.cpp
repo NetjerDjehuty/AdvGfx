@@ -70,40 +70,16 @@ namespace AdvGfxCore
 		return true;
 	}
 
-	glm::vec3 movement;
-
-	GLuint prog;
-
-	GLuint projLoc;
-	GLuint viewLoc;
-	GLuint modelLoc;
-
-	camera c;
-
-	glm::mat4 modelMatrix;
-
-	float xChange = 0, yChange = 0, zChange = 0;
-
-	clock_t lastDraw = clock();
-
-	Model* model = NULL;
-	Model* model2 = NULL;
-
-	GLuint texture;
-
-	void Init(int w, int h)
+	GLuint loadProgram(const char* vertS, const char* fragS)
 	{
-		glClearColor(.1f, .2f, .3f, 1.f);
+		GLuint p;
 
-		glGenTextures(1, &texture);
-		glBindTexture(GL_TEXTURE_2D, texture);
-
-		prog = glCreateProgram();
+		p = glCreateProgram();
 		GLuint vert = glCreateShader(GL_VERTEX_SHADER);
 		GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
 
-		string v = textFileRead("rayShader.vert");
-		string f = textFileRead("rayShader.frag");
+		string v = textFileRead(vertS);
+		string f = textFileRead(fragS);
 
 		const char* vArr = v.c_str();
 		const char* fArr = f.c_str();
@@ -137,27 +113,69 @@ namespace AdvGfxCore
 			}
 		}
 
-		glAttachShader(prog, frag);
-		glAttachShader(prog, vert);
+		glAttachShader(p, frag);
+		glAttachShader(p, vert);
 
-		glLinkProgram(prog);
+		glLinkProgram(p);
 
-		validateProgram(prog);
+		validateProgram(p);
+
+		getErrors();
+
+		return p;
+	}
+
+	glm::vec3 movement;
+
+	GLuint prog;
+
+	GLuint projLoc;
+	GLuint viewLoc;
+	GLuint modelLoc;
+
+	camera c;
+
+	glm::mat4 modelMatrix;
+
+	float xChange = 0, yChange = 0, zChange = 0;
+
+	clock_t lastDraw = clock();
+
+	Model* model = NULL;
+	Model* model2 = NULL;
+
+	GLuint texture;
+
+	GLuint quadVAO;
+	GLuint quadVBO;
+
+	void Init(int w, int h)
+	{
+		glClearColor(.1f, .2f, .3f, 1.f);
+
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		prog = loadProgram("rayShader.vert","rayShader.frag");
 
 
-		projLoc = glGetUniformLocation(prog, "projection");
+		/*projLoc = glGetUniformLocation(prog, "projection");
 		viewLoc = glGetUniformLocation(prog, "view");
-		modelLoc = glGetUniformLocation(prog, "model");
+		modelLoc = glGetUniformLocation(prog, "model");*/
 
 		ResetCamera();
 
 		c.projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
 		//glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
+		/*modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));*/
 
 		glUseProgram(prog);
 
-
+		/*
 		glUniformMatrix4fv(projLoc, 1, false, &c.projectionMatrix[0][0]);
 		//glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
@@ -165,6 +183,25 @@ namespace AdvGfxCore
 		glEnable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 
+		*/
+		glGenVertexArrays(1, &quadVAO);
+		glBindVertexArray(quadVAO);
+
+		static const GLfloat g_quad_vertex_buffer_data[] = {
+			-1.0f, -1.0f,
+			1.0f, -1.0f,
+			-1.0f,  1.0f,
+			-1.0f,  1.0f,
+			1.0f, -1.0f,
+			1.0f,  1.0f,
+		};
+
+		glGenBuffers(1, &quadVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+		glEnableVertexAttribArray(0);
 
 		getErrors();
 	}
@@ -178,33 +215,10 @@ namespace AdvGfxCore
 		clock_t startDraw = clock();
 
 		// Draw the pixels
-		GLuint quad_vertexArrayID;
-		glGenVertexArrays(1, &quad_vertexArrayID);
-		glBindVertexArray(quad_vertexArrayID);
-
-		static const GLfloat g_quad_vertex_buffer_data[] = {
-			-1.0f, -1.0f, 0.0f,
-			1.0f, -1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f,
-			1.0f, -1.0f, 0.0f,
-			1.0f,  1.0f, 0.0f,
-		};
-
-		GLuint quad_vertexBuffer;
-		glGenBuffers(1, &quad_vertexBuffer);
-		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexBuffer);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
 		
-		pixel p;
-		p.r = 255;
-		p.a = 255;
-		p.b = 0;
-		p.g = 0;
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
-
-		glDrawArrays(GL_TRIANGLES, 0, 2);
+		glDrawArrays(GL_TRIANGLES, 0, 6);
 
 		getErrors();
 		/*
@@ -229,7 +243,7 @@ namespace AdvGfxCore
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
 		if(model)
-			model->draw();
+		model->draw();
 
 		//getErrors();
 

@@ -81,33 +81,172 @@ objects createScene()
 {
 	objects o = {};
 	o.spheres = new sphere[1];
-	o.planes = new plane[3];
-	o.nrPlanes = 0, o.nrSpheres = 0;
+	o.planes = new plane[5];
+	o.lights = new light[3];
+	o.nrPlanes = 0, o.nrSpheres = 0, o.nrLights = 0;
 	sphere s;
-	s.pos = glm::vec3(1.f,1.f,1.f);
+	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
+	s.mat.color = glm::vec4(1,0,0,1);
 
 	o.spheres[o.nrSpheres] = s;
 	o.nrSpheres++;
 
 	plane p;
-	p.point = glm::vec3(10.f, 0.f, 1.f);
-	p.normal = glm::vec3(1.f,0.f,0.f);
-
+	p.point = glm::vec3(0.f, -10.f, 0.f);
+	p.normal = glm::vec3(0.f,1.f,0.f);
+	p.mat.color = glm::vec4(1,1,1,1);
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
-	p.point = glm::vec3(-10.f, 0.f, 1.f);
+	p.point = glm::vec3(0.f, 5.f, 0.f);
+	p.normal = glm::vec3(0.f, -1.f, 0.f);
+	p.mat.color = glm::vec4(1,1,1,1);
+	o.planes[o.nrPlanes] = p;
+	o.nrPlanes++;
+
+	p.point = glm::vec3(-10.f, -5.f, 0.f);
+	p.normal = glm::vec3(1.f, 0.f, 0.f);
+	p.mat.color = glm::vec4(1,0,0,1);
+	o.planes[o.nrPlanes] = p;
+	o.nrPlanes++;
+	
+	p.point = glm::vec3(10.f, -5.f, 0.f);
 	p.normal = glm::vec3(-1.f, 0.f, 0.f);
+	p.mat.color = glm::vec4(0,1,0,1);
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
-	p.point = glm::vec3(0.f, 0.f, 0.f);
-	p.normal = glm::vec3(0.f, 1.f, 0.f);
+	p.point = glm::vec3(0.f, 0.f, 40.f);
+	p.normal = glm::vec3(0.f, 0.f, -1.f);
+	p.mat.color = glm::vec4(1,1,1,1);
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
+
+	light l;
+	l.color = glm::vec4(0,0,1,1);
+	l.location = glm::vec3(-8,4.5,38);
+	l.dir = glm::normalize(l.location - s.pos);
+	o.lights[o.nrLights] = l;
+	o.nrLights++;
+	
+	l.color = glm::vec4(0,1,0,1);
+	l.location = glm::vec3(6,4,20);
+	l.dir = glm::normalize(l.location - s.pos);
+	o.lights[o.nrLights] = l;
+	o.nrLights++;
+	
+	l.color = glm::vec4(1,0,0,1);
+	l.location = glm::vec3(2,3,35);
+	l.dir = glm::normalize(l.location - s.pos);
+	o.lights[o.nrLights] = l;
+	o.nrLights++;
 
 	return o;
+}
+
+const float maxDist = 90000.f;
+
+float RayTracer::intersect(ray *r, objects *o, void** obj, int*type)
+{
+	float f = maxDist;
+	float closestPoint = maxDist;
+
+	for(int i = 0; i < o->nrSpheres; i++)
+	{
+		sphere s = o->spheres[i];
+		// Check if there is a collision
+		if(RayTracer::raySphereIntersection(&s, r, &f))
+		{
+			if(closestPoint > f)
+			{
+				closestPoint = f;
+				*type = 1;
+				*obj = (void*)&o->spheres[i];
+			}
+		}
+	}
+	for(int i = 0; i < o->nrPlanes; i++)
+	{
+		plane p = o->planes[i];
+		// Check if there is a collision
+		if(RayTracer::rayPlaneIntersection(&p, r, &f))
+		{
+			if(closestPoint > f)
+			{
+				closestPoint = f;
+				*type = 2;
+				*obj = (void*)&o->planes[i];
+			}
+		}
+	}
+
+	return closestPoint;
+}
+
+glm::vec4 RayTracer::traceRay(ray* r, objects* scene )
+{
+	void* intersectObj = 0;
+	int intersectObjType = 0;
+	float t = intersect( r, scene, &intersectObj, &intersectObjType);
+
+	glm::vec4 color(0);	
+	if ( t < maxDist ){		
+		glm::vec3 intersectPos = r->origin+r->direction*t ;
+		glm::vec3 normal;
+
+		material m;
+
+		if ( intersectObjType == 1 ){		
+			normal = glm::normalize(intersectPos-((sphere*)intersectObj)->pos);
+			m = ((sphere*)intersectObj)->mat;
+		}
+		else if (intersectObjType == 2 ){
+			normal = ((plane*)intersectObj)->normal;
+			m = ((plane*)intersectObj)->mat;
+		}
+
+
+		glm::vec4 diffuseColor = m.color;
+
+		/*if (m.reflectivity > 0 )
+		{
+		ray reflectRay;
+		float3 R = reflect(ray->dir, normal);
+		reflectRay.origin = intersectPos + R*0.001;
+		reflectRay.dir    = R;
+		diffuseColor += m.reflectivity*raytrace2(&reflectRay, scene);
+		} 
+		else if (m.refractivity > 0 )
+		{
+		struct Ray refractRay;
+		float3 R = refract(ray->dir, normal, 0.6);
+		if ( dot(R,normal) < 0 ){
+		refractRay.origin = intersectPos + R*0.001;
+		refractRay.dir    = R;
+		diffuseColor += m.refractivity*raytrace2(&refractRay, scene);
+		}
+		}*/
+
+		for(int i = 0; i < scene->nrLights; i++){
+			float lightDist = glm::length(scene->lights[i].location - intersectPos);
+			glm::vec3 L = scene->lights[i].dir;
+			L = scene->lights[i].location - intersectPos ;
+			lightDist = glm::length(L);
+			L = glm::normalize(L);
+
+			float pointLit = 1;
+			ray shadowRay;
+			shadowRay.origin = intersectPos + L*0.001f;
+			shadowRay.direction = L;
+			t = intersect( &shadowRay, scene, &intersectObj, &intersectObjType);
+			if ( t < lightDist ){
+				pointLit = 0;
+			}
+			color += pointLit*diffuseColor*scene->lights[i].color*glm::max(0.0f,glm::dot(normal, L));
+		}
+	}
+	return glm::clamp(color,0.0f,1.0f) * 255;
 }
 
 pixel* RayTracer::shootRay(camera c)
@@ -127,11 +266,7 @@ pixel* RayTracer::shootRay(camera c)
 
 	RECT nearPlane = {};
 
-	pixel p = {};
-	p.a = 'a';
-	p.b = 'b';
-	p.r = 'r';
-	p.g = 'g';
+	pixel p = { 0,0,0,255 };
 
 	const int width = 1280;
 	const int height = 720;
@@ -139,7 +274,6 @@ pixel* RayTracer::shootRay(camera c)
 
 	// Probleem kinderen
 	pixel *pixels = new pixel[width*height];
-	float *closestPoint = new float[width*height];
 	// end probleem kinderen
 	for(int x = 0; x < width; x++)
 	{
@@ -153,53 +287,15 @@ pixel* RayTracer::shootRay(camera c)
 
 			temp = c.viewMatrix * glm::vec4(xx, yy, 0, 1.0f);
 			r.direction = glm::normalize(glm::vec3(temp.x, temp.y, temp.z) - r.origin);
-			float f;
-			closestPoint[y * width + x] = 90000.f;
 
-			pixels[y * width + x].a = 0;
-			pixels[y * width + x].r = 0;
-			pixels[y * width + x].g = 0;
-			pixels[y * width + x].b = 0;
+			pixels[y * width + x] = p;
 
-			for(int i = 0; i < o.nrSpheres; i++)
-			{
-				sphere s = o.spheres[i];
-				// Check if there is a collision
-				if(RayTracer::raySphereIntersection(&s, &r, &f))
-				{
-					if(closestPoint[y * width + x] > f)
-					{
-						pixels[y * width + x].a = 255;
-						pixels[y * width + x].r = 0;
-						pixels[y * width + x].g = 255;
-						pixels[y * width + x].b = 0;
-						closestPoint[y * width + x] = f;
-					}
-				}
-			}
-			for(int i = 0; i < o.nrPlanes; i++)
-			{
-				plane p = o.planes[i];
-				// Check if there is a collision
-				if(RayTracer::rayPlaneIntersection(&p, &r, &f))
-				{
-					if(closestPoint[y * width + x] > f)
-					{
-						pixels[y * width + x].a = 255;
-						pixels[y * width + x].r = 255;
-						pixels[y * width + x].g = 0;
-						pixels[y * width + x].b = 0;
-						closestPoint[y * width + x] = f;
-					}
-				}
-			}
-			pixel p = pixels[y * width + x];
-			/*if(p.g == 255 && p.a == 255)
-				std::cout << 's';
-			if(p.r == 255 && p.a == 255)
-				std::cout << 'p';
-			if(p.a == 0 && p.b == 0 && p.g == 0 && p.r == 0)
-				std::cout << 'n';*/
+			glm::vec4 result = RayTracer::traceRay(&r,&o);
+			pixels[y * width + x].a = result.a;
+			pixels[y * width + x].r = result.r;
+			pixels[y * width + x].g = result.g;
+			pixels[y * width + x].b = result.b;
+
 		}
 		//std::cout << '\n';
 	}
