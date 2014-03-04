@@ -73,18 +73,22 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AdvGfx.h" />
+    <ClInclude Include="KDTree.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelMesh.h" />
     <ClInclude Include="objLoader.h" />
+    <ClInclude Include="Raytracer.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AdvGfx.cpp" />
+    <ClCompile Include="KDTree.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelMesh.cpp" />
     <ClCompile Include="objLoader.cpp" />
+    <ClCompile Include="Raytracer.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>
   <ItemGroup>

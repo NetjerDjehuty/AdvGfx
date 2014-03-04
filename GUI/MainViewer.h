@@ -153,26 +153,21 @@ namespace GUI {
 		void GLMouseDown(Object^ sender, MouseEventArgs^ e)
 		{
 			auto oldLocation = e->Location;
-			Console::WriteLine("Mouse event");
 			switch(e->Button)
 			{
 			case System::Windows::Forms::MouseButtons::Left:
-				Console::WriteLine("left button");
 				break;
 			case System::Windows::Forms::MouseButtons::Right:
-				Console::WriteLine("Right button");
 				break;
 			case System::Windows::Forms::MouseButtons::Middle:
-				Console::WriteLine("Middle button");
 				break;
 			default:
-				Console::WriteLine("Other buttton; {0}", e->Button.ToString());
+				break;
 			}
 		}
 
 		void GLMouseScroll(Object^ sender, MouseEventArgs^ e)
 		{
-			Console::WriteLine("Scrolled? Yup {0} degree", e->Delta);
 			if(e->Delta < 0)
 				AdvGfxCore::MoveCamera(.0f,.0f,-.1f);
 			else
@@ -205,8 +200,8 @@ namespace GUI {
 		void InitializeComponent(void)
 		{
 			this->splitContainer1 = (gcnew System::Windows::Forms::SplitContainer());
-			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
 			this->button1 = (gcnew System::Windows::Forms::Button());
+			this->openFileDialog1 = (gcnew System::Windows::Forms::OpenFileDialog());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^  >(this->splitContainer1))->BeginInit();
 			this->splitContainer1->Panel2->SuspendLayout();
 			this->splitContainer1->SuspendLayout();
@@ -225,19 +220,19 @@ namespace GUI {
 			this->splitContainer1->SplitterDistance = 555;
 			this->splitContainer1->TabIndex = 0;
 			// 
+			// button1
+			// 
+			this->button1->Location = System::Drawing::Point(12, 468);
+			this->button1->Name = L"button1";
+			this->button1->Size = System::Drawing::Size(101, 23);
+			this->button1->TabIndex = 0;
+			this->button1->Text = L"Load Object";
+			this->button1->UseVisualStyleBackColor = true;
+			this->button1->Click += gcnew System::EventHandler(this, &MainViewer::button1_Click);
+			// 
 			// openFileDialog1
 			// 
 			this->openFileDialog1->Filter = L"Obj file (*.obj)|*.obj";
-			// 
-			// button1
-			// 
-			this->button1->Location = System::Drawing::Point(17, 468);
-			this->button1->Name = L"button1";
-			this->button1->Size = System::Drawing::Size(75, 23);
-			this->button1->TabIndex = 0;
-			this->button1->Text = L"button1";
-			this->button1->UseVisualStyleBackColor = true;
-			this->button1->Click += gcnew System::EventHandler(this, &MainViewer::button1_Click);
 			// 
 			// MainViewer
 			// 
@@ -266,10 +261,11 @@ namespace GUI {
 
 			System::Windows::Forms::DialogResult result = openFileDialog1->ShowDialog();
 			if(result == System::Windows::Forms::DialogResult::OK)
-			{
-				
+			{				
 				this->glViewer1->QueueActions(gcnew EventHandler(this, &GUI::MainViewer::LoadEvent), this, e);
 				this->glViewer1->Focus();
+				// Reset Camera
+				SendKeys::Send("R");
 			}
 		}
 	};

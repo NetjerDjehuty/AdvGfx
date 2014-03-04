@@ -17,6 +17,38 @@ namespace AdvGfxCore
 		Backward
 	};
 
+	struct sphere
+	{
+		//Material* m;
+		glm::vec3 pos;
+		float radius;
+	};
+
+	struct triangle
+	{
+		//Material* m;
+		glm::vec3 v0, v1, v2;
+	};
+
+	struct plane
+	{
+		//Material* m;
+		glm::vec3 normal, point;
+	};
+
+	struct camera
+	{
+		// Camera positie
+		glm::vec3 viewVec;
+
+		// Richting
+		float xRot;
+		float yRot;
+
+		glm::mat4 projectionMatrix;
+		glm::mat4 viewMatrix;
+	};
+
 
 	void Init(int width, int height);
 	void Draw();

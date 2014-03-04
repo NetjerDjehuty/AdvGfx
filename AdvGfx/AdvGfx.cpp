@@ -4,6 +4,7 @@
 #include "stdafx.h"
 #include "AdvGfx.h"
 #include "objLoader.h"
+#include "Raytracer.h"
 
 #include <fstream>
 #include <iostream>
@@ -12,11 +13,8 @@
 #include <GLM\glm.hpp>
 #include <GLM\ext.hpp>
 
-
-
 namespace AdvGfxCore
 {
-
 	using namespace std;
 
 	void getErrors()
@@ -80,11 +78,9 @@ namespace AdvGfxCore
 	GLuint viewLoc;
 	GLuint modelLoc;
 
-	glm::mat4 modelMatrix;
+	camera c;
 
-	glm::vec3 viewVec;
-	float xRot = 0.0f;
-	float yRot = 0.0f;
+	glm::mat4 modelMatrix;
 
 	float xChange = 0, yChange = 0, zChange = 0;
 
@@ -93,17 +89,21 @@ namespace AdvGfxCore
 	Model* model = NULL;
 	Model* model2 = NULL;
 
+	GLuint texture;
+
 	void Init(int w, int h)
 	{
-
 		glClearColor(.1f, .2f, .3f, 1.f);
+
+		glGenTextures(1, &texture);
+		glBindTexture(GL_TEXTURE_2D, texture);
 
 		prog = glCreateProgram();
 		GLuint vert = glCreateShader(GL_VERTEX_SHADER);
 		GLuint frag = glCreateShader(GL_FRAGMENT_SHADER);
 
-		string v = textFileRead("basic.vert");
-		string f = textFileRead("basic.frag");
+		string v = textFileRead("rayShader.vert");
+		string f = textFileRead("rayShader.frag");
 
 		const char* vArr = v.c_str();
 		const char* fArr = f.c_str();
@@ -151,15 +151,15 @@ namespace AdvGfxCore
 
 		ResetCamera();
 
-		glm::mat4 projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
-		glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
-		modelMatrix = glm::scale(glm::mat4(1.0f), 0.01f, 0.01f, 0.01f);
+		c.projectionMatrix = glm::perspective(60.0f, (float)w / h, 0.1f, 100.f);
+		//glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
+		modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));
 
 		glUseProgram(prog);
 
 
-		glUniformMatrix4fv(projLoc, 1, false, &projectionMatrix[0][0]);
-		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
+		glUniformMatrix4fv(projLoc, 1, false, &c.projectionMatrix[0][0]);
+		//glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
 		glEnable(GL_CULL_FACE);
@@ -167,31 +167,65 @@ namespace AdvGfxCore
 
 
 		getErrors();
-
 	}
 
 
 	void Draw()
 	{
+		RayTracer r;
+		pixel *pixels = r.shootRay(c);
+
 		clock_t startDraw = clock();
+
+		// Draw the pixels
+		GLuint quad_vertexArrayID;
+		glGenVertexArrays(1, &quad_vertexArrayID);
+		glBindVertexArray(quad_vertexArrayID);
+
+		static const GLfloat g_quad_vertex_buffer_data[] = {
+			-1.0f, -1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f,
+			1.0f, -1.0f, 0.0f,
+			1.0f,  1.0f, 0.0f,
+		};
+
+		GLuint quad_vertexBuffer;
+		glGenBuffers(1, &quad_vertexBuffer);
+		glBindBuffer(GL_ARRAY_BUFFER, quad_vertexBuffer);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_quad_vertex_buffer_data), g_quad_vertex_buffer_data, GL_STATIC_DRAW);
+		
+		pixel p;
+		p.r = 255;
+		p.a = 255;
+		p.b = 0;
+		p.g = 0;
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, &pixels);
+
+		glDrawArrays(GL_TRIANGLES, 0, 2);
+
+		getErrors();
+		/*
 		float duration = (startDraw - lastDraw) / (float)CLOCKS_PER_SEC;
 
 		//viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
 		glm::vec3 finalMovement = 10 * duration * movement;
-		finalMovement = glm::rotateX(finalMovement, -xRot);
-		finalMovement = glm::rotateY(finalMovement, -yRot);
-		viewVec += finalMovement;
+		finalMovement = glm::rotateX(finalMovement, -(c.xRot));
+		finalMovement = glm::rotateY(finalMovement, -c.yRot);
+		c.viewVec += finalMovement;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		glm::mat4 viewMatrix = glm::mat4(1.0f);
-		viewMatrix = glm::rotate(viewMatrix, xRot, glm::vec3(1.f, 0.f, 0.f));
-		viewMatrix = glm::rotate(viewMatrix, yRot, glm::vec3(0.f, 1.f, 0.f));
-		viewMatrix = glm::translate(viewMatrix, -viewVec);
+		c.viewMatrix = glm::mat4(1.0f);
+		c.viewMatrix = glm::rotate(c.viewMatrix, c.xRot, glm::vec3(1.f, 0.f, 0.f));
+		c.viewMatrix = glm::rotate(c.viewMatrix, c.yRot, glm::vec3(0.f, 1.f, 0.f));
+		c.viewMatrix = glm::translate(c.viewMatrix, -(c.viewVec));
 
 		//modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
-		glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
+		glUniformMatrix4fv(viewLoc, 1, false, &c.viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
 		if(model)
@@ -201,7 +235,7 @@ namespace AdvGfxCore
 
 		lastDraw = startDraw;
 
-		xChange = yChange = zChange = 0;
+		xChange = yChange = zChange = 0;*/
 	}
 
 	void Resize(int width, int height)
@@ -249,15 +283,15 @@ namespace AdvGfxCore
 
 	void RotateCamera(int x, int y)
 	{
-		xRot -= y;
-		yRot -= x;
+		c.xRot -= y;
+		c.yRot -= x;
 	}
 
 	void ResetCamera()
 	{
-		viewVec = glm::vec3(0.0f, 0.0f, 5.0);
-		xRot = 0.f;
-		yRot = 0.f;
+		c.viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
+		c.xRot = 0.f;
+		c.yRot = 0.f;
 	}
 
 	unsigned int getFileLength(ifstream& file)
