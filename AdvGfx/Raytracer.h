@@ -2,6 +2,7 @@
 #include <Windows.h>
 
 #include "AdvGfx.h"
+#include <vector>
 
 #include <glm\glm.hpp>
 #include <glm\ext.hpp>
@@ -43,9 +44,9 @@ struct light
 
 struct objects
 {
-	sphere *spheres;
-	plane *planes;
-	light *lights;
+	std::vector<sphere> spheres;
+	std::vector<plane> planes;
+	std::vector<light> lights;
 
 	int nrPlanes, nrSpheres, nrLights;
 };

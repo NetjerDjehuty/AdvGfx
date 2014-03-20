@@ -80,9 +80,6 @@ bool RayTracer::rayPlaneIntersection(plane* p, ray* r, float* f)
 objects createScene()
 {
 	objects o = {};
-	o.spheres = new sphere[1];
-	o.planes = new plane[5];
-	o.lights = new light[1];
 	o.nrPlanes = 0, o.nrSpheres = 0, o.nrLights = 0;
 	sphere s;
 	// First sphere (red)
@@ -92,18 +89,18 @@ objects createScene()
 	s.mat.reflectivity = 0.01f;
 	s.mat.refractivity = 0.0f;
 
-	o.spheres[o.nrSpheres] = s;
+	o.spheres.push_back(s);
 	o.nrSpheres++;
-	/*
+
 	// Second sphere (blue)
-	s.pos = glm::vec3(-2.f,-5.f,15.f);
+	s.pos = glm::vec3(-2.f,-5.f,20.f);
 	s.radius = 1.5f;
 	s.mat.color = glm::vec4(0,0,1,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 0.01f;
 	s.mat.refractivity = 0.0f;
 
-	o.spheres[o.nrSpheres] = s;
-	o.nrSpheres++;*/
+	o.spheres.push_back(s);
+	o.nrSpheres++;
 
 	plane p;
 	// BOTTOM
@@ -112,7 +109,7 @@ objects createScene()
 	p.mat.color = glm::vec4(1,1,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
-	o.planes[o.nrPlanes] = p;
+	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	// TOP
@@ -121,7 +118,7 @@ objects createScene()
 	p.mat.color = glm::vec4(1,1,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
-	o.planes[o.nrPlanes] = p;
+	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	// LEFT
@@ -130,7 +127,7 @@ objects createScene()
 	p.mat.color = glm::vec4(1,0,0,1);
 	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
-	o.planes[o.nrPlanes] = p;
+	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	// RIGHT
@@ -139,7 +136,7 @@ objects createScene()
 	p.mat.color = glm::vec4(0,1,0,1);
 	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
-	o.planes[o.nrPlanes] = p;
+	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	/// BACK
@@ -148,7 +145,7 @@ objects createScene()
 	p.mat.color = glm::vec4(0,0,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
-	o.planes[o.nrPlanes] = p;
+	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	light l;
@@ -156,19 +153,19 @@ objects createScene()
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
-	o.lights[o.nrLights] = l;
+	o.lights.push_back(l);
 	o.nrLights++;
 
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
-	o.lights[o.nrLights] = l;
+	o.lights.push_back(l);
 	o.nrLights++;
 
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
-	o.lights[o.nrLights] = l;
+	o.lights.push_back(l);
 	o.nrLights++;
 
 	return o;
