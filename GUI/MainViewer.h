@@ -222,7 +222,7 @@ namespace GUI {
 			// 
 			// button1
 			// 
-			this->button1->Location = System::Drawing::Point(12, 468);
+			this->button1->Location = System::Drawing::Point(85, 685);
 			this->button1->Name = L"button1";
 			this->button1->Size = System::Drawing::Size(101, 23);
 			this->button1->TabIndex = 0;

@@ -82,62 +82,91 @@ objects createScene()
 	objects o = {};
 	o.spheres = new sphere[1];
 	o.planes = new plane[5];
-	o.lights = new light[3];
+	o.lights = new light[1];
 	o.nrPlanes = 0, o.nrSpheres = 0, o.nrLights = 0;
 	sphere s;
+	// First sphere (red)
 	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
 	s.mat.color = glm::vec4(1,0,0,1);
+	s.mat.reflectivity = 0.01f;
+	s.mat.refractivity = 0.0f;
 
 	o.spheres[o.nrSpheres] = s;
 	o.nrSpheres++;
+	/*
+	// Second sphere (blue)
+	s.pos = glm::vec3(-2.f,-5.f,15.f);
+	s.radius = 1.5f;
+	s.mat.color = glm::vec4(0,0,1,1);
+	s.mat.reflectivity = 0.0f;
+	s.mat.refractivity = 0.0f;
+
+	o.spheres[o.nrSpheres] = s;
+	o.nrSpheres++;*/
 
 	plane p;
+	// BOTTOM
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
+	p.mat.reflectivity = 0.0f;
+	p.mat.refractivity = 0.0f;
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
+	// TOP
 	p.point = glm::vec3(0.f, 5.f, 0.f);
 	p.normal = glm::vec3(0.f, -1.f, 0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
+	p.mat.reflectivity = 0.0f;
+	p.mat.refractivity = 0.0f;
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
+	// LEFT
 	p.point = glm::vec3(-10.f, -5.f, 0.f);
 	p.normal = glm::vec3(1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(1,0,0,1);
-	o.planes[o.nrPlanes] = p;
-	o.nrPlanes++;
-	
-	p.point = glm::vec3(10.f, -5.f, 0.f);
-	p.normal = glm::vec3(-1.f, 0.f, 0.f);
-	p.mat.color = glm::vec4(0,1,0,1);
+	p.mat.reflectivity = 0.01f;
+	p.mat.refractivity = 0.0f;
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
+	// RIGHT
+	p.point = glm::vec3(10.f, -5.f, 0.f);
+	p.normal = glm::vec3(-1.f, 0.f, 0.f);
+	p.mat.color = glm::vec4(0,1,0,1);
+	p.mat.reflectivity = 0.01f;
+	p.mat.refractivity = 0.0f;
+	o.planes[o.nrPlanes] = p;
+	o.nrPlanes++;
+
+	/// BACK
 	p.point = glm::vec3(0.f, 0.f, 40.f);
 	p.normal = glm::vec3(0.f, 0.f, -1.f);
-	p.mat.color = glm::vec4(1,1,1,1);
+	p.mat.color = glm::vec4(0,0,1,1);
+	p.mat.reflectivity = 0.0f;
+	p.mat.refractivity = 0.0f;
 	o.planes[o.nrPlanes] = p;
 	o.nrPlanes++;
 
 	light l;
-	l.color = glm::vec4(0,0,1,1);
+
+	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
 	o.lights[o.nrLights] = l;
 	o.nrLights++;
-	
-	l.color = glm::vec4(0,1,0,1);
+
+	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
 	o.lights[o.nrLights] = l;
 	o.nrLights++;
-	
-	l.color = glm::vec4(1,0,0,1);
-	l.location = glm::vec3(2,3,35);
+
+	l.color = glm::vec4((float)1/3);
+	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
 	o.lights[o.nrLights] = l;
 	o.nrLights++;
@@ -184,13 +213,24 @@ float RayTracer::intersect(ray *r, objects *o, void** obj, int*type)
 	return closestPoint;
 }
 
-glm::vec4 RayTracer::traceRay(ray* r, objects* scene )
+glm::vec3 reflect(glm::vec3 V, glm::vec3 N){
+	return V + (2.0f * N * -glm::dot(V, N));
+}
+
+glm::vec3 refract(glm::vec3 V, glm::vec3 N, float refrIndex)
+{
+	float cosI = -glm::dot( N, V );
+	float cosT2 = 1.0f - refrIndex * refrIndex * (1.0f - cosI * cosI);
+	return (refrIndex * V) + (refrIndex * cosI - sqrt( cosT2 )) * N;
+}
+
+glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 {
 	void* intersectObj = 0;
 	int intersectObjType = 0;
 	float t = intersect( r, scene, &intersectObj, &intersectObjType);
 
-	glm::vec4 color(0);	
+	glm::vec4 color(0);
 	if ( t < maxDist ){		
 		glm::vec3 intersectPos = r->origin+r->direction*t ;
 		glm::vec3 normal;
@@ -206,27 +246,28 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene )
 			m = ((plane*)intersectObj)->mat;
 		}
 
-
-		glm::vec4 diffuseColor = m.color;
-
-		/*if (m.reflectivity > 0 )
+		glm::vec4 reflectColor = m.color, refractColor = m.color;
+		if(depth <= 4)
 		{
-		ray reflectRay;
-		float3 R = reflect(ray->dir, normal);
-		reflectRay.origin = intersectPos + R*0.001;
-		reflectRay.dir    = R;
-		diffuseColor += m.reflectivity*raytrace2(&reflectRay, scene);
-		} 
-		else if (m.refractivity > 0 )
-		{
-		struct Ray refractRay;
-		float3 R = refract(ray->dir, normal, 0.6);
-		if ( dot(R,normal) < 0 ){
-		refractRay.origin = intersectPos + R*0.001;
-		refractRay.dir    = R;
-		diffuseColor += m.refractivity*raytrace2(&refractRay, scene);
+			if (m.reflectivity > 0 )
+			{
+				ray reflectRay;
+				glm::vec3 R = reflect(r->direction, normal);
+				reflectRay.origin = intersectPos + R*0.001f;
+				reflectRay.direction = R;
+				reflectColor = m.reflectivity * traceRay(&reflectRay, scene, depth + 1);
+			} 
+			else if (m.refractivity > 0 )
+			{
+				ray refractRay;
+				glm::vec3 R = refract(r->direction, normal, 0.6);
+				if (glm::dot(R,normal) < 0 ){
+					refractRay.origin = intersectPos + R*0.001f;
+					refractRay.direction = R;
+					refractColor = m.refractivity * traceRay(&refractRay, scene, depth +1);
+				}
+			}
 		}
-		}*/
 
 		for(int i = 0; i < scene->nrLights; i++){
 			float lightDist = glm::length(scene->lights[i].location - intersectPos);
@@ -243,10 +284,13 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene )
 			if ( t < lightDist ){
 				pointLit = 0;
 			}
-			color += pointLit*diffuseColor*scene->lights[i].color*glm::max(0.0f,glm::dot(normal, L));
+
+			glm::vec4 diffuseColor = refractColor + reflectColor + m.color * (m.reflectivity + m.refractivity);
+
+			color += pointLit* diffuseColor *scene->lights[i].color*glm::max(0.0f,glm::dot(normal, L));
 		}
 	}
-	return glm::clamp(color,0.0f,1.0f) * 255;
+	return glm::clamp(color, 0.0f, 1.0f) * 255.0f;
 }
 
 pixel* RayTracer::shootRay(camera c)
@@ -258,23 +302,13 @@ pixel* RayTracer::shootRay(camera c)
 	glm::vec4 temp = c.viewMatrix * glm::vec4(0.f,0.f,-1.f,1.f);
 	r.origin = glm::vec3(temp.x, temp.y, temp.z);
 
-	//ax + by + cz + d = 0,
-	float A = viewProjectionMatrix[0][2];
-	float B = viewProjectionMatrix[1][2];
-	float C = viewProjectionMatrix[2][2];
-	float D = viewProjectionMatrix[3][2];
-
-	RECT nearPlane = {};
-
 	pixel p = { 0,0,0,255 };
 
 	const int width = 1280;
 	const int height = 720;
 	const float aspect = (float)width/(float)height;
 
-	// Probleem kinderen
 	pixel *pixels = new pixel[width*height];
-	// end probleem kinderen
 	for(int x = 0; x < width; x++)
 	{
 		for(int y = 0; y < height; y++)
@@ -290,17 +324,15 @@ pixel* RayTracer::shootRay(camera c)
 
 			pixels[y * width + x] = p;
 
-			glm::vec4 result = RayTracer::traceRay(&r,&o);
+			glm::vec4 result = RayTracer::traceRay(&r,&o, 1);
 			pixels[y * width + x].a = result.a;
 			pixels[y * width + x].r = result.r;
 			pixels[y * width + x].g = result.g;
 			pixels[y * width + x].b = result.b;
 
 		}
-		//std::cout << '\n';
 	}
 
-	std::cout << "fertig" << std::endl;
 	return pixels;
 }
 

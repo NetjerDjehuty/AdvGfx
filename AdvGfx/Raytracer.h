@@ -11,6 +11,7 @@ using namespace AdvGfxCore;
 struct material
 {
 	glm::vec4 color;
+	float refractivity,reflectivity;
 };
 
 
@@ -71,7 +72,7 @@ public:
 	bool raySphereIntersection(sphere* s, ray* r, float* f);
 	bool rayPlaneIntersection(plane* p, ray* r, float* f);
 	float intersect(ray *r, objects *scene, void** obj, int *type);
-	glm::vec4 traceRay(ray* ray, objects* scene );
+	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
 };
 
