@@ -51,6 +51,14 @@ struct objects
 	int nrPlanes, nrSpheres, nrLights;
 };
 
+struct photon
+{
+public:
+	glm::vec3 position;
+	glm::vec4 color;
+	float intensity;
+};
+
 struct ray
 {
 public:
@@ -75,6 +83,12 @@ public:
 	float intersect(ray *r, objects *scene, void** obj, int *type);
 	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
+	void tracePhoton(photon f, objects* scene, glm::vec3 direction);
+	void shootPhoton(objects* scene);
+
+public:
+	std::vector<photon> photonMap;
+	int nrOfPhotons;
 };
 
 objects createScene();

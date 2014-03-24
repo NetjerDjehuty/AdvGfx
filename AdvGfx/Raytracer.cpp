@@ -86,7 +86,7 @@ objects createScene()
 	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
 	s.mat.color = glm::vec4(1,0,0,1);
-	s.mat.reflectivity = 0.01f;
+	s.mat.reflectivity = 0.0f;
 	s.mat.refractivity = 0.0f;
 
 	o.spheres.push_back(s);
@@ -96,7 +96,7 @@ objects createScene()
 	s.pos = glm::vec3(-2.f,-5.f,20.f);
 	s.radius = 1.5f;
 	s.mat.color = glm::vec4(0,0,1,1);
-	s.mat.reflectivity = 0.01f;
+	s.mat.reflectivity = 0.0f;
 	s.mat.refractivity = 0.0f;
 
 	o.spheres.push_back(s);
@@ -106,7 +106,7 @@ objects createScene()
 	// BOTTOM
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
-	p.mat.color = glm::vec4(1,1,1,1);
+	p.mat.color = glm::vec4(0,0,0,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
@@ -125,7 +125,7 @@ objects createScene()
 	p.point = glm::vec3(-10.f, -5.f, 0.f);
 	p.normal = glm::vec3(1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(1,0,0,1);
-	p.mat.reflectivity = 0.01f;
+	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
@@ -134,7 +134,7 @@ objects createScene()
 	p.point = glm::vec3(10.f, -5.f, 0.f);
 	p.normal = glm::vec3(-1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(0,1,0,1);
-	p.mat.reflectivity = 0.01f;
+	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
@@ -329,8 +329,51 @@ pixel* RayTracer::shootRay(camera c)
 
 		}
 	}
-
+	
 	return pixels;
 }
 
+void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
+{
+	void* intersectObj = 0;
+	int intersectObjType = 0;
+	ray r;
+	r.origin = f.position;
+	r.direction = direction;
+
+	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
+	if(t < maxDist) // hit before max rendering distance
+		photonMap.push_back(f);
+}
+
+glm::vec3 randomDirect()
+{
+	float x = rand() % 360, y = rand() % 360, z = rand() % 360;
+	return glm::vec3(x,y,z);
+}
+
+void RayTracer::shootPhoton(objects* scene)
+{
+	nrOfPhotons = 5000;
+	photon f;
+
+	for(int i = 0; i < scene->nrLights; i++)
+	{
+		// Random direction -> shoot nr of photons (at least 5K I think) => total of 15K
+		// for each x y z direction -> 360 * 360 * 360 photons = 146M total => 46,6M per light source
+		// for half the directions  -> 180 * 180 * 180 photons =  17M total =>  5,8M per light source
+		// for quarter directions   ->  90 *  90 *  90 photons =   2M total =>  729K per light source
+		// one eight of directions  ->  45 *  45 *  45 photons = 273K total => 91,1K per light source
+		// shoot 360 photons from each light source (one for each degree)
+
+		light l = scene->lights[i];
+		f.color = l.color;
+		f.position = l.location;
+		for(int j = 0; j < nrOfPhotons; j++)
+		{
+			glm::vec3 direction = randomDirect();
+			tracePhoton(f, scene, direction);
+		}
+	}
+}
 objects o;

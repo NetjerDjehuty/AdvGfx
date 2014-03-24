@@ -98,7 +98,7 @@ namespace GUI {
 				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Forward, false);
 				break;
 			case Keys::Down:
-			case Keys::S:
+			case Keys::S:				
 				AdvGfxCore::MoveCamera(AdvGfxCore::Movement::Backward, false);
 				break;
 			case Keys::R:
