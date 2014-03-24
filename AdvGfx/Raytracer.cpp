@@ -293,6 +293,7 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 pixel* RayTracer::shootRay(camera c)
 {
 	objects o = createScene();
+	shootPhoton(&o);/*
 	glm::mat4 viewProjectionMatrix = c.viewMatrix * c.projectionMatrix;
 
 	ray r;
@@ -328,28 +329,66 @@ pixel* RayTracer::shootRay(camera c)
 			pixels[y * width + x].b = result.b;
 
 		}
-	}
-	
+	}*/
+
 	return pixels;
-}
-
-void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
-{
-	void* intersectObj = 0;
-	int intersectObjType = 0;
-	ray r;
-	r.origin = f.position;
-	r.direction = direction;
-
-	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
-	if(t < maxDist) // hit before max rendering distance
-		photonMap.push_back(f);
 }
 
 glm::vec3 randomDirect()
 {
-	float x = rand() % 360, y = rand() % 360, z = rand() % 360;
+	srand(0);
+	std::random_device rd;
+	std::mt19937 engine(rd());
+	std::uniform_real<float> dist(-1.0f, 1.0f);
+
+	float x = dist(engine), y = dist(engine), z = dist(engine);
 	return glm::vec3(x,y,z);
+}
+
+// Traces a photon through the scene and going in recursion if needed
+// if not it stores the photon in the photon map with its new collision position
+void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
+{
+	float ksi = ((float) rand() / (RAND_MAX));
+	void* intersectObj = 0;
+	int intersectObjType = 0;
+
+	// Need ray to quickly determine intersection point
+	ray r;
+	r.origin = f.position; // so the position and direction are stored in a new ray
+	r.direction = direction;
+
+	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
+	if ( t < maxDist )
+	{		
+		glm::vec3 normal;
+		f.position = f.position + direction * t;
+
+		std::cout << "dir.x " << direction.x << " dir.y " << direction.y << " dir.z " << direction.z << std::endl;
+
+		material m;
+
+		if ( intersectObjType == 1 ){		
+			normal = glm::normalize(f.position-((sphere*)intersectObj)->pos);
+			m = ((sphere*)intersectObj)->mat;
+		}
+		else if (intersectObjType == 2 ){
+			normal = ((plane*)intersectObj)->normal;
+			m = ((plane*)intersectObj)->mat;
+		}
+
+		float p = m.reflectivity;
+
+		if(ksi < p)
+		{
+			glm::vec3 newDirection = reflect(direction, normal);
+			tracePhoton(f, scene, newDirection);
+		}
+		else
+		{
+			photonMap.push_back(f);
+		}
+	}
 }
 
 void RayTracer::shootPhoton(objects* scene)
@@ -369,6 +408,7 @@ void RayTracer::shootPhoton(objects* scene)
 		light l = scene->lights[i];
 		f.color = l.color;
 		f.position = l.location;
+		f.intensity = 1.0f;
 		for(int j = 0; j < nrOfPhotons; j++)
 		{
 			glm::vec3 direction = randomDirect();

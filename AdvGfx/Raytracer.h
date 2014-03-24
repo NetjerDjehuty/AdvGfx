@@ -3,6 +3,7 @@
 
 #include "AdvGfx.h"
 #include <vector>
+#include <random>
 
 #include <glm\glm.hpp>
 #include <glm\ext.hpp>
@@ -90,5 +91,4 @@ public:
 	std::vector<photon> photonMap;
 	int nrOfPhotons;
 };
-
 objects createScene();
