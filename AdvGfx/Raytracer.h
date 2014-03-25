@@ -41,6 +41,7 @@ struct light
 	glm::vec3 location;
 	glm::vec4 color;
 	glm::vec3 dir;
+	glm::vec3 normal;
 };
 
 struct objects
@@ -84,7 +85,7 @@ public:
 	float intersect(ray *r, objects *scene, void** obj, int *type);
 	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
-	void tracePhoton(photon f, objects* scene, glm::vec3 direction);
+	void tracePhoton(photon f, glm::vec3 direction, light l,  objects* scene);
 	void shootPhoton(objects* scene);
 
 public:

@@ -153,18 +153,36 @@ objects createScene()
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
+	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
+		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
+	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
+		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
+	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
+		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
 	o.nrLights++;
 
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
+	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
+		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
+	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
+		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
+	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
+		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
 	o.nrLights++;
 
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
+	if(l.dir.x < l.dir.y && l.dir.x < l.dir.z)
+		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
+	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
+		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
+	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
+		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
 	o.nrLights++;
 
@@ -347,7 +365,7 @@ glm::vec3 randomDirect()
 
 // Traces a photon through the scene and going in recursion if needed
 // if not it stores the photon in the photon map with its new collision position
-void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
+void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* scene)
 {
 	float ksi = ((float) rand() / (RAND_MAX));
 	void* intersectObj = 0;
@@ -359,12 +377,10 @@ void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
 	r.direction = direction;
 
 	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
-	if ( t < maxDist )
+	if ( t < maxDist ) // Intersection before the max redering distance is achieved
 	{		
 		glm::vec3 normal;
 		f.position = f.position + direction * t;
-
-		std::cout << "dir.x " << direction.x << " dir.y " << direction.y << " dir.z " << direction.z << std::endl;
 
 		material m;
 
@@ -381,8 +397,10 @@ void RayTracer::tracePhoton(photon f, objects* scene, glm::vec3 direction)
 
 		if(ksi < p)
 		{
+
+			float intensity = glm::dot(l.normal, normal) * l.color.r * f.intensity;
 			glm::vec3 newDirection = reflect(direction, normal);
-			tracePhoton(f, scene, newDirection);
+			tracePhoton(f, newDirection, l, scene);
 		}
 		else
 		{
@@ -399,11 +417,6 @@ void RayTracer::shootPhoton(objects* scene)
 	for(int i = 0; i < scene->nrLights; i++)
 	{
 		// Random direction -> shoot nr of photons (at least 5K I think) => total of 15K
-		// for each x y z direction -> 360 * 360 * 360 photons = 146M total => 46,6M per light source
-		// for half the directions  -> 180 * 180 * 180 photons =  17M total =>  5,8M per light source
-		// for quarter directions   ->  90 *  90 *  90 photons =   2M total =>  729K per light source
-		// one eight of directions  ->  45 *  45 *  45 photons = 273K total => 91,1K per light source
-		// shoot 360 photons from each light source (one for each degree)
 
 		light l = scene->lights[i];
 		f.color = l.color;
@@ -412,7 +425,7 @@ void RayTracer::shootPhoton(objects* scene)
 		for(int j = 0; j < nrOfPhotons; j++)
 		{
 			glm::vec3 direction = randomDirect();
-			tracePhoton(f, scene, direction);
+			tracePhoton(f, direction, l, scene);
 		}
 	}
 }
