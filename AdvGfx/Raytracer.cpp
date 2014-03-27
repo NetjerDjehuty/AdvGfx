@@ -311,9 +311,9 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 pixel* RayTracer::shootRay(camera c)
 {
 	objects o = createScene();
-	/*&shootPhoton(&o);
+	shootPhoton(&o);
 	
-	const int width = 1280;
+	/*const int width = 1280;
 	const int height = 720;
 	int i = 0;
 	photon f = photonMap[i];
@@ -335,7 +335,7 @@ pixel* RayTracer::shootRay(camera c)
 		int l = i * width + i;
 		pixels[l] = p1;
 		f = photonMap[++i];
-	}*/
+	}
 		
 	glm::mat4 viewProjectionMatrix = c.viewMatrix * c.projectionMatrix;
 
@@ -372,7 +372,7 @@ pixel* RayTracer::shootRay(camera c)
 			pixels[y * width + x].b = result.b;
 
 		}
-	}
+	}*/
 
 	return pixels;
 }
@@ -437,6 +437,8 @@ void RayTracer::shootPhoton(objects* scene)
 {
 	nrOfPhotons = 5000;
 	photon f;
+
+	photonMap.clear();
 
 	for(int i = 0; i < scene->nrLights; i++)
 	{
