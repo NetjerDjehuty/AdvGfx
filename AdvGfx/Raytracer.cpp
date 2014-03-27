@@ -86,7 +86,7 @@ objects createScene()
 	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
 	s.mat.color = glm::vec4(1,0,0,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 0.01f;
 	s.mat.refractivity = 0.0f;
 
 	o.spheres.push_back(s);
@@ -96,60 +96,60 @@ objects createScene()
 	s.pos = glm::vec3(-2.f,-5.f,20.f);
 	s.radius = 1.5f;
 	s.mat.color = glm::vec4(0,0,1,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 0.01f;
 	s.mat.refractivity = 0.0f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
 
 	plane p;
-	// BOTTOM
+	// BOTTOM (0,0,0)
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
 	p.mat.color = glm::vec4(0,0,0,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	// TOP
+	// TOP (1,1,1)
 	p.point = glm::vec3(0.f, 5.f, 0.f);
 	p.normal = glm::vec3(0.f, -1.f, 0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	// LEFT
+	// LEFT (1,0,0)
 	p.point = glm::vec3(-10.f, -5.f, 0.f);
 	p.normal = glm::vec3(1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(1,0,0,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	// RIGHT
+	// RIGHT (0,1,0)
 	p.point = glm::vec3(10.f, -5.f, 0.f);
 	p.normal = glm::vec3(-1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(0,1,0,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	/// BACK
+	/// BACK (0,0,1)
 	p.point = glm::vec3(0.f, 0.f, 40.f);
 	p.normal = glm::vec3(0.f, 0.f, -1.f);
 	p.mat.color = glm::vec4(0,0,1,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.01f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
 	light l;
-
+	
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
@@ -161,7 +161,7 @@ objects createScene()
 		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
 	o.nrLights++;
-
+	
 	l.color = glm::vec4((float)1/3);
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
@@ -311,7 +311,32 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 pixel* RayTracer::shootRay(camera c)
 {
 	objects o = createScene();
-	shootPhoton(&o);/*
+	/*&shootPhoton(&o);
+	
+	const int width = 1280;
+	const int height = 720;
+	int i = 0;
+	photon f = photonMap[i];
+
+	pixel p = { 0,0,0,255 };
+	pixel *pixels = new pixel[width*height];
+
+	for(int x = 0; x < width; x++)
+	{
+		for(int y = 0; y < height; y++)
+		{
+			pixels[y * width + x] = p;
+		}
+	}
+
+	pixel p1 = { 1,1,1,255 };
+	while(f.intensity != NULL && i < 15000)
+	{
+		int l = i * width + i;
+		pixels[l] = p1;
+		f = photonMap[++i];
+	}*/
+		
 	glm::mat4 viewProjectionMatrix = c.viewMatrix * c.projectionMatrix;
 
 	ray r;
@@ -347,14 +372,13 @@ pixel* RayTracer::shootRay(camera c)
 			pixels[y * width + x].b = result.b;
 
 		}
-	}*/
+	}
 
 	return pixels;
 }
 
 glm::vec3 randomDirect()
 {
-	srand(0);
 	std::random_device rd;
 	std::mt19937 engine(rd());
 	std::uniform_real<float> dist(-1.0f, 1.0f);
