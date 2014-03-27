@@ -86,7 +86,7 @@ public:
 	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
 	void tracePhoton(photon f, glm::vec3 direction, light l,  objects* scene);
-	void shootPhoton(objects* scene);
+	std::vector<photon> shootPhoton();
 
 public:
 	std::vector<photon> photonMap;

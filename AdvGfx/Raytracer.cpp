@@ -308,10 +308,12 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 	return glm::clamp(color, 0.0f, 1.0f) * 255.0f;
 }
 
+
+
 pixel* RayTracer::shootRay(camera c)
 {
 	objects o = createScene();
-	shootPhoton(&o);/*
+	/*shootPhoton(&o);/*
 	glm::mat4 viewProjectionMatrix = c.viewMatrix * c.projectionMatrix;
 
 	ray r;
@@ -327,26 +329,26 @@ pixel* RayTracer::shootRay(camera c)
 	pixel *pixels = new pixel[width*height];
 	for(int x = 0; x < width; x++)
 	{
-		for(int y = 0; y < height; y++)
-		{
-			float xx = (float) x / width + (1/width);
-			float yy = (float) y / height + (1/height);
+	for(int y = 0; y < height; y++)
+	{
+	float xx = (float) x / width + (1/width);
+	float yy = (float) y / height + (1/height);
 
-			xx = (xx - 0.5f) * aspect;
-			yy = (yy - 0.5f);
+	xx = (xx - 0.5f) * aspect;
+	yy = (yy - 0.5f);
 
-			temp = c.viewMatrix * glm::vec4(xx, yy, 0, 1.0f);
-			r.direction = glm::normalize(glm::vec3(temp.x, temp.y, temp.z) - r.origin);
+	temp = c.viewMatrix * glm::vec4(xx, yy, 0, 1.0f);
+	r.direction = glm::normalize(glm::vec3(temp.x, temp.y, temp.z) - r.origin);
 
-			pixels[y * width + x] = p;
+	pixels[y * width + x] = p;
 
-			glm::vec4 result = RayTracer::traceRay(&r,&o, 1);
-			pixels[y * width + x].a = result.a;
-			pixels[y * width + x].r = result.r;
-			pixels[y * width + x].g = result.g;
-			pixels[y * width + x].b = result.b;
+	glm::vec4 result = RayTracer::traceRay(&r,&o, 1);
+	pixels[y * width + x].a = result.a;
+	pixels[y * width + x].r = result.r;
+	pixels[y * width + x].g = result.g;
+	pixels[y * width + x].b = result.b;
 
-		}
+	}
 	}*/
 
 	return pixels;
@@ -354,7 +356,6 @@ pixel* RayTracer::shootRay(camera c)
 
 glm::vec3 randomDirect()
 {
-	srand(0);
 	std::random_device rd;
 	std::mt19937 engine(rd());
 	std::uniform_real<float> dist(-1.0f, 1.0f);
@@ -393,6 +394,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 			m = ((plane*)intersectObj)->mat;
 		}
 
+		f.color = m.color;
 		float p = m.reflectivity;
 
 		if(ksi < p)
@@ -409,24 +411,31 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 	}
 }
 
-void RayTracer::shootPhoton(objects* scene)
+std::vector<photon> RayTracer::shootPhoton()
 {
+	if(photonMap.size() >0 )
+		return photonMap;
+
+	objects scene = createScene();
+
 	nrOfPhotons = 5000;
 	photon f;
 
-	for(int i = 0; i < scene->nrLights; i++)
+	for(int i = 0; i < scene.nrLights; i++)
 	{
 		// Random direction -> shoot nr of photons (at least 5K I think) => total of 15K
 
-		light l = scene->lights[i];
+		light l = scene.lights[i];
 		f.color = l.color;
 		f.position = l.location;
 		f.intensity = 1.0f;
 		for(int j = 0; j < nrOfPhotons; j++)
 		{
 			glm::vec3 direction = randomDirect();
-			tracePhoton(f, direction, l, scene);
+			tracePhoton(f, direction, l, &scene);
 		}
 	}
+
+	return photonMap;
 }
 objects o;

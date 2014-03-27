@@ -48,5 +48,11 @@
     <None Include="rayShader.vert">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="bbShader.vert">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="bbShader.frag">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

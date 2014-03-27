@@ -133,6 +133,10 @@ namespace AdvGfxCore
 	GLuint viewLoc;
 	GLuint modelLoc;
 
+	GLuint posLoc;
+	GLuint colLoc;
+	GLuint powLoc;
+
 	camera c;
 
 	glm::mat4 modelMatrix;
@@ -149,9 +153,51 @@ namespace AdvGfxCore
 	GLuint quadVAO;
 	GLuint quadVBO;
 
+	GLuint bbVAO[1];
+	GLuint bbVBO[1];
+
+	GLuint photonTex;
+
+	void InitTex()
+	{
+		glGenTextures(1, &photonTex);
+		glBindTexture(GL_TEXTURE_2D, photonTex);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+		const int dim = 20;
+
+		char *data = new char[dim*dim]; 
+
+		float maxD = dim/2;
+
+		for(int i = 0; i<dim; ++i)
+		{
+			for(int j = 0; j<dim; ++j)
+			{
+				float x = (i - (float)dim/2.f );
+				float y = (j - (float)dim/2.f );
+
+				float D = glm::length(glm::vec2(x,y));
+
+				float dat = max(0.f,(maxD - D)/maxD * 255);
+
+				data[i+j*dim] = (char)dat;
+			}
+		}
+
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_R8, dim, dim, 0, GL_RED, GL_UNSIGNED_BYTE, data);
+		delete[] data;
+
+		getErrors();
+	}
+
 	void Init(int w, int h)
 	{
-		glClearColor(.1f, .2f, .3f, 1.f);
+		//glClearColor(.1f, .2f, .3f, 1.f);
+		glClearColor(0,0,0,0);
 
 		glGenTextures(1, &texture);
 		glBindTexture(GL_TEXTURE_2D, texture);
@@ -160,12 +206,17 @@ namespace AdvGfxCore
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-		prog = loadProgram("rayShader.vert","rayShader.frag");
+		InitTex();
+
+		prog = loadProgram("bbShader.vert","bbShader.frag");
 
 
-		/*projLoc = glGetUniformLocation(prog, "projection");
+		projLoc = glGetUniformLocation(prog, "proj");
 		viewLoc = glGetUniformLocation(prog, "view");
-		modelLoc = glGetUniformLocation(prog, "model");*/
+		posLoc = glGetUniformLocation(prog, "particleCenter_worldspace");
+		colLoc = glGetUniformLocation(prog, "photonColor");
+		powLoc = glGetUniformLocation(prog, "pow");
+		/*modelLoc = glGetUniformLocation(prog, "model");*/
 
 		ResetCamera();
 
@@ -175,9 +226,9 @@ namespace AdvGfxCore
 
 		glUseProgram(prog);
 
-		/*
+
 		glUniformMatrix4fv(projLoc, 1, false, &c.projectionMatrix[0][0]);
-		//glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
+		/*//glUniformMatrix4fv(viewLoc, 1, false, &viewMatrix[0][0]);
 		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
 		glEnable(GL_CULL_FACE);
@@ -203,25 +254,60 @@ namespace AdvGfxCore
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
 		glEnableVertexAttribArray(0);
 
+		glGenVertexArrays(1, &bbVAO[0]);
+		glBindVertexArray(bbVAO[0]);
+
+
+		static const GLfloat g_vertex_buffer_data[] = { 
+			-0.5f, -0.5f,
+			0.5f, -0.5f,
+			-0.5f,  0.5f,
+			-0.5f,  0.5f,
+			0.5f, -0.5f,
+			0.5f,  0.5f,
+		};
+
+		glGenBuffers(1, bbVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, bbVBO[0]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(g_vertex_buffer_data), g_vertex_buffer_data, GL_DYNAMIC_DRAW);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
+		glEnableVertexAttribArray(0);
+
+		glEnable(GL_CULL_FACE);
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 		getErrors();
 	}
 
 
+	void DrawPhoton(const photon &p)
+	{
+		glUniform3f(posLoc, p.position.x, p.position.y, p.position.z);
+		glUniform3f(colLoc, p.color.r, p.color.g, p.color.b);
+		glUniform1f(powLoc, p.intensity);
+
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+	}
+
+	RayTracer r;
+
 	void Draw()
 	{
-		RayTracer r;
-		pixel *pixels = r.shootRay(c);
+		//pixel *pixels = r.shootRay(c);
+
+		std::vector<photon> photons = r.shootPhoton();
 
 		clock_t startDraw = clock();
 
 		// Draw the pixels
-		
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-		getErrors();
-		/*
+
+
 		float duration = (startDraw - lastDraw) / (float)CLOCKS_PER_SEC;
 
 		//viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
@@ -240,16 +326,21 @@ namespace AdvGfxCore
 		//modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
 		glUniformMatrix4fv(viewLoc, 1, false, &c.viewMatrix[0][0]);
-		glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
+		//glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
-		if(model)
-		model->draw();
+		int count = photons.size();
 
-		//getErrors();
+
+		for(;count-->0;)
+		{
+			DrawPhoton(photons[count]);
+		}
+
+		getErrors();
 
 		lastDraw = startDraw;
 
-		xChange = yChange = zChange = 0;*/
+		xChange = yChange = zChange = 0;
 	}
 
 	void Resize(int width, int height)
