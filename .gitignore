@@ -12,3 +12,4 @@ GUI/Release/
 *.pdb
 *.dll
 Release/
+*.user

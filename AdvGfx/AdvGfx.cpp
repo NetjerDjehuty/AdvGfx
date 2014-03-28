@@ -274,10 +274,10 @@ namespace AdvGfxCore
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
 		glEnableVertexAttribArray(0);
 
-		glEnable(GL_CULL_FACE);
-		glEnable(GL_DEPTH_TEST);
+		//glEnable(GL_CULL_FACE);
+		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 		getErrors();
 	}
@@ -394,9 +394,9 @@ namespace AdvGfxCore
 
 	void ResetCamera()
 	{
-		c.viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
-		c.xRot = 0.f;
-		c.yRot = 0.f;
+		c.viewVec = glm::vec3(1.23f, -3.78f, -8.27f);
+		c.xRot = -12.f;
+		c.yRot = 180.f;
 	}
 
 	unsigned int getFileLength(ifstream& file)
