@@ -8,6 +8,8 @@
 #include <glm\glm.hpp>
 #include <glm\ext.hpp>
 
+#define PI 3.14159265
+
 using namespace AdvGfxCore;
 
 struct material
@@ -59,6 +61,7 @@ public:
 	glm::vec3 position;
 	glm::vec4 color;
 	float intensity;
+	float m;
 };
 
 struct ray

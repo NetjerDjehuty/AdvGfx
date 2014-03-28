@@ -116,7 +116,7 @@ objects createScene()
 	p.point = glm::vec3(0.f, 5.f, 0.f);
 	p.normal = glm::vec3(0.f, -1.f, 0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 1.0f;
 	p.mat.refractivity = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
@@ -150,7 +150,7 @@ objects createScene()
 
 	light l;
 
-	l.color = glm::vec4((float)1/3);
+	l.color = glm::vec4(5000);
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
@@ -162,7 +162,7 @@ objects createScene()
 	o.lights.push_back(l);
 	o.nrLights++;
 
-	l.color = glm::vec4((float)1/3);
+	l.color = glm::vec4(1000);
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
@@ -174,7 +174,7 @@ objects createScene()
 	o.lights.push_back(l);
 	o.nrLights++;
 
-	l.color = glm::vec4((float)1/3);
+	l.color = glm::vec4(5000);
 	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x < l.dir.y && l.dir.x < l.dir.z)
@@ -378,7 +378,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 	r.direction = direction;
 
 	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
-	if ( t < maxDist ) // Intersection before the max redering distance is achieved
+	if (t > 0 && t < maxDist ) // Intersection before the max redering distance is achieved
 	{		
 		glm::vec3 normal;
 		f.position = f.position + direction * t;
@@ -397,16 +397,26 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 		f.color = m.color;
 		float p = m.reflectivity;
 
-		if(ksi < p)
-		{
+		// brdf: dot(surface Normal, normalized light direction (pointing from surface to light)) * color of surface intensity of light;
+		glm::vec4 brdf = glm::dot(glm::normalize(direction), normal) * m.color * f.intensity;
 
-			float intensity = glm::dot(l.normal, normal) * l.color.r * f.intensity;
-			glm::vec3 newDirection = reflect(direction, normal);
-			tracePhoton(f, newDirection, l, scene);
+		photonMap.push_back(f);
+
+		if(ksi < 1/f.m)
+		{
+			f.intensity *= f.m;
 		}
 		else
 		{
-			photonMap.push_back(f);
+			return;
+		}
+
+		if(ksi < p)
+		{
+			glm::vec3 newDirection = reflect(glm::normalize(direction), normal);
+			if(direction == newDirection)
+				std::cout << "help!" << std::endl;
+			tracePhoton(f, newDirection, l, scene);
 		}
 	}
 }
@@ -424,14 +434,33 @@ std::vector<photon> RayTracer::shootPhoton()
 	for(int i = 0; i < scene.nrLights; i++)
 	{
 		// Random direction -> shoot nr of photons (at least 5K I think) => total of 15K
-
 		light l = scene.lights[i];
+
+		sphere lsphere;
+		lsphere.pos = l.location;
+		lsphere.radius = 1;
+
 		f.color = l.color;
 		f.position = l.location;
-		f.intensity = 1.0f;
+		f.intensity = l.color.r / nrOfPhotons;
+		f.m = 5;
+
 		for(int j = 0; j < nrOfPhotons; j++)
 		{
-			glm::vec3 direction = randomDirect();
+			float xsquare = lsphere.pos.x * lsphere.pos.x;
+			float ysquare = lsphere.pos.y * lsphere.pos.y;
+			float zsquare = lsphere.pos.z * lsphere.pos.z;
+
+			float r = sqrt(xsquare + ysquare + zsquare);
+
+			float phi = acos(sqrt(xsquare + ysquare)/ r);
+			//float theta = acos(lsphere.pos.x / sqrt(xsquare + ysquare));
+			float theta = atan(lsphere.pos.x / lsphere.pos.y);
+			
+			glm::vec3 randomDirection = randomDirect();
+			glm::vec3 point = glm::vec3(r, theta, phi);
+			glm::vec3 direction = glm::normalize(point * randomDirection);
+
 			tracePhoton(f, direction, l, &scene);
 		}
 	}

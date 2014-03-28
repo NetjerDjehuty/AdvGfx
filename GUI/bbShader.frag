@@ -10,6 +10,6 @@ out vec4 fragColor;
 
 void main() 
 {
-   float c = texture2D(diffTex,texCoord);
-   fragColor = vec4(photonColor*pow*c, c);
+   vec4 c = texture2D(diffTex,texCoord);
+   fragColor = vec4(photonColor*pow*c.r, c.r);
 }
