@@ -114,8 +114,10 @@
   <ItemGroup>
     <None Include="basic.frag" />
     <None Include="basic.vert" />
+    <None Include="bbShader.frag" />
     <None Include="rayShader.frag" />
     <None Include="rayShader.vert" />
+    <None Include="bbShader.vert" />
   </ItemGroup>
   <ItemGroup>
     <None Include="object.obj">
