@@ -382,8 +382,9 @@ namespace AdvGfxCore
 			break;
 		case AdvGfxCore::Backward:
 			movement.z = (float)((int)!stop) * 1;
-			break;
+			break;			
 		}
+		std::cout << "viewvec: (" << c.viewVec.x << ',' << c.viewVec.y << ',' << c.viewVec.z << ") xRot: " << c.xRot <<  " yRot: " << c.yRot << std::endl;
 	}
 
 	void RotateCamera(int x, int y)
@@ -394,9 +395,9 @@ namespace AdvGfxCore
 
 	void ResetCamera()
 	{
-		c.viewVec = glm::vec3(0.0f, 0.0f, 5.0f);
-		c.xRot = 0.f;
-		c.yRot = 0.f;
+		c.viewVec = glm::vec3(1.23f, -3.78f, -8.27f);
+		c.xRot = -12.f;
+		c.yRot = 180.f;
 	}
 
 	unsigned int getFileLength(ifstream& file)

@@ -9,13 +9,14 @@
 #include <glm\ext.hpp>
 
 #define PI 3.14159265
+#define e 2.71828
 
 using namespace AdvGfxCore;
 
 struct material
 {
 	glm::vec4 color;
-	float refractivity,reflectivity;
+	float refractivity,reflectivity, diffuse;
 };
 
 
@@ -60,8 +61,7 @@ struct photon
 public:
 	glm::vec3 position;
 	glm::vec4 color;
-	float intensity;
-	float m;
+	float intensity;	
 };
 
 struct ray
@@ -88,6 +88,7 @@ public:
 	float intersect(ray *r, objects *scene, void** obj, int *type);
 	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
+	void emit(light l, objects* scene);
 	void tracePhoton(photon f, glm::vec3 direction, light l,  objects* scene);
 	std::vector<photon> shootPhoton();
 

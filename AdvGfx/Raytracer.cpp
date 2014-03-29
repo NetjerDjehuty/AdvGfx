@@ -88,6 +88,7 @@ objects createScene()
 	s.mat.color = glm::vec4(1,0,0,1);
 	s.mat.reflectivity = 0.0f;
 	s.mat.refractivity = 0.0f;
+	s.mat.diffuse = 0.0f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
@@ -98,6 +99,7 @@ objects createScene()
 	s.mat.color = glm::vec4(0,0,1,1);
 	s.mat.reflectivity = 0.0f;
 	s.mat.refractivity = 0.0f;
+	s.mat.diffuse = 0.0f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
@@ -106,9 +108,10 @@ objects createScene()
 	// BOTTOM
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
-	p.mat.color = glm::vec4(0,0,0,1);
+	p.mat.color = glm::vec4(1,0,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
+	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -116,8 +119,9 @@ objects createScene()
 	p.point = glm::vec3(0.f, 5.f, 0.f);
 	p.normal = glm::vec3(0.f, -1.f, 0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
-	p.mat.reflectivity = 1.0f;
+	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
+	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -127,6 +131,7 @@ objects createScene()
 	p.mat.color = glm::vec4(1,0,0,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
+	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -136,6 +141,7 @@ objects createScene()
 	p.mat.color = glm::vec4(0,1,0,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
+	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -145,6 +151,7 @@ objects createScene()
 	p.mat.color = glm::vec4(0,0,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
+	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -395,31 +402,66 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 		}
 
 		f.color = m.color;
-		float p = m.reflectivity;
+		float s = m.reflectivity;
+		float d = m.diffuse;
 
-		// brdf: dot(surface Normal, normalized light direction (pointing from surface to light)) * color of surface intensity of light;
-		glm::vec4 brdf = glm::dot(glm::normalize(direction), normal) * m.color * f.intensity;
-
-		photonMap.push_back(f);
-
-		if(ksi < 1/f.m)
+		
+		glm::vec3 newDir;
+		if(0 < ksi && ksi < d) // diffuse reflection
 		{
-			f.intensity *= f.m;
+			float brdf = glm::dot(glm::normalize(direction), normal);
+			newDir = randomDirect();
+			float propDens = (1 / sqrt(2*PI)) * pow(e, (pow(-newDir.x, 2)/2));
+
+			glm::vec4 newColor = glm::dot(glm::normalize(direction), normal) * m.color* f.intensity;
+			newDir = randomDirect();
+			while(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z *newDir.z > 1)
+			{
+				newDir = randomDirect();
+			}
+			newDir = reflect(glm::normalize(direction), normal);
+			
+			tracePhoton(f, newDir, l, scene);
 		}
-		else
+		else if(ksi > d && ksi < (s+d)) // specular reflection
 		{
-			return;
+		    newDir= reflect(glm::normalize(direction), normal);
+			tracePhoton(f, newDir, l, scene);
 		}
-
-		if(ksi < p)
+		else if(ksi > (s+d) && ksi < 1) // absorbed
 		{
-			glm::vec3 newDirection = reflect(glm::normalize(direction), normal);
-			if(direction == newDirection)
-				std::cout << "help!" << std::endl;
-			tracePhoton(f, newDirection, l, scene);
+			photonMap.push_back(f);
 		}
 	}
 }
+int emitted = 0, oldemitted = 0, run = 1;
+void RayTracer::emit(light l, objects* o)
+{
+	photon f;
+	std::random_device rd;
+	std::mt19937 engine(rd());
+	std::uniform_real<float> dist(-1.0f, 1.0f);
+	while(emitted < nrOfPhotons * run)
+	{
+		float x = dist(engine), y = dist(engine), z = dist(engine);
+		while((x*x) + (y*y) + (z*z) > 1)
+		{
+			x = dist(engine), y = dist(engine), z = dist(engine);
+		}
+
+		glm::vec3 direction = glm::normalize(glm::vec3(x,y,z));
+		f.position = l.location;
+		tracePhoton(f, direction, l, o);
+		emitted++;
+	}
+	for(int i = oldemitted; i < emitted; i++)
+	{
+		photonMap[i].intensity = (l.color.r/(emitted-oldemitted));
+	}
+	oldemitted = emitted;
+	run++;
+}
+
 
 std::vector<photon> RayTracer::shootPhoton()
 {
@@ -433,36 +475,8 @@ std::vector<photon> RayTracer::shootPhoton()
 
 	for(int i = 0; i < scene.nrLights; i++)
 	{
-		// Random direction -> shoot nr of photons (at least 5K I think) => total of 15K
 		light l = scene.lights[i];
-
-		sphere lsphere;
-		lsphere.pos = l.location;
-		lsphere.radius = 1;
-
-		f.color = l.color;
-		f.position = l.location;
-		f.intensity = l.color.r / nrOfPhotons;
-		f.m = 5;
-
-		for(int j = 0; j < nrOfPhotons; j++)
-		{
-			float xsquare = lsphere.pos.x * lsphere.pos.x;
-			float ysquare = lsphere.pos.y * lsphere.pos.y;
-			float zsquare = lsphere.pos.z * lsphere.pos.z;
-
-			float r = sqrt(xsquare + ysquare + zsquare);
-
-			float phi = acos(sqrt(xsquare + ysquare)/ r);
-			//float theta = acos(lsphere.pos.x / sqrt(xsquare + ysquare));
-			float theta = atan(lsphere.pos.x / lsphere.pos.y);
-			
-			glm::vec3 randomDirection = randomDirect();
-			glm::vec3 point = glm::vec3(r, theta, phi);
-			glm::vec3 direction = glm::normalize(point * randomDirection);
-
-			tracePhoton(f, direction, l, &scene);
-		}
+		emit(l, &scene);
 	}
 
 	return photonMap;
