@@ -45,6 +45,7 @@ struct light
 	glm::vec4 color;
 	glm::vec3 dir;
 	glm::vec3 normal;
+	float intensity;
 };
 
 struct objects

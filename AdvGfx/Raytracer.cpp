@@ -86,7 +86,7 @@ objects createScene()
 	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
 	s.mat.color = glm::vec4(1,0,0,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 0.5f;
 	s.mat.refractivity = 0.0f;
 	s.mat.diffuse = 0.0f;
 
@@ -97,7 +97,7 @@ objects createScene()
 	s.pos = glm::vec3(-2.f,-5.f,20.f);
 	s.radius = 1.5f;
 	s.mat.color = glm::vec4(0,0,1,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 0.5f;
 	s.mat.refractivity = 0.0f;
 	s.mat.diffuse = 0.0f;
 
@@ -109,7 +109,7 @@ objects createScene()
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
 	p.mat.color = glm::vec4(1,0,1,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.5f;
 	p.mat.refractivity = 0.0f;
 	p.mat.diffuse = 0.0f;
 	o.planes.push_back(p);
@@ -119,13 +119,13 @@ objects createScene()
 	p.point = glm::vec3(0.f, 5.f, 0.f);
 	p.normal = glm::vec3(0.f, -1.f, 0.f);
 	p.mat.color = glm::vec4(1,1,1,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.5f;
 	p.mat.refractivity = 0.0f;
-	p.mat.diffuse = 0.0f;
+	p.mat.diffuse = 0.01f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	// LEFT
+	// RIGHT
 	p.point = glm::vec3(-10.f, -5.f, 0.f);
 	p.normal = glm::vec3(1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(1,0,0,1);
@@ -135,13 +135,13 @@ objects createScene()
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
-	// RIGHT
+	// LEFT
 	p.point = glm::vec3(10.f, -5.f, 0.f);
 	p.normal = glm::vec3(-1.f, 0.f, 0.f);
 	p.mat.color = glm::vec4(0,1,0,1);
-	p.mat.reflectivity = 0.0f;
+	p.mat.reflectivity = 0.4f;
 	p.mat.refractivity = 0.0f;
-	p.mat.diffuse = 0.0f;
+	p.mat.diffuse = 0.4f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -157,7 +157,8 @@ objects createScene()
 
 	light l;
 
-	l.color = glm::vec4(5000);
+	l.color = glm::vec4((float)1/3);
+	l.intensity = 5000;
 	l.location = glm::vec3(-8,4.5,38);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
@@ -169,7 +170,8 @@ objects createScene()
 	o.lights.push_back(l);
 	o.nrLights++;
 
-	l.color = glm::vec4(1000);
+	l.color = glm::vec4((float)1/3);
+	l.intensity = 5000;
 	l.location = glm::vec3(6,4,20);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
@@ -181,7 +183,8 @@ objects createScene()
 	o.lights.push_back(l);
 	o.nrLights++;
 
-	l.color = glm::vec4(5000);
+	l.color = glm::vec4((float)1/3);
+	l.intensity = 5000;
 	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x < l.dir.y && l.dir.x < l.dir.z)
@@ -371,6 +374,8 @@ glm::vec3 randomDirect()
 	return glm::vec3(x,y,z);
 }
 
+int emitted = 0, oldemitted = 0, run = 1;
+
 // Traces a photon through the scene and going in recursion if needed
 // if not it stores the photon in the photon map with its new collision position
 void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* scene)
@@ -386,7 +391,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 
 	float t = intersect(&r, scene, &intersectObj, &intersectObjType);
 	if (t > 0 && t < maxDist ) // Intersection before the max redering distance is achieved
-	{		
+	{		// If it doesn't collide before, shits going down :(
 		glm::vec3 normal;
 		f.position = f.position + direction * t;
 
@@ -401,40 +406,46 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 			m = ((plane*)intersectObj)->mat;
 		}
 
-		f.color = m.color;
+		if(f.color == glm::vec4(0)) // not reflected
+			f.color = (l.color * m.color);
+		else // reflected
+			f.color += (l.color * m.color);
+		f.color.a = 1;
+
 		float s = m.reflectivity;
 		float d = m.diffuse;
 
-		
+
 		glm::vec3 newDir;
 		if(0 < ksi && ksi < d) // diffuse reflection
 		{
-			float brdf = glm::dot(glm::normalize(direction), normal);
+			float brdf = glm::dot(glm::normalize(direction), normal) /** m.color * f.intensity*/;
 			newDir = randomDirect();
 			float propDens = (1 / sqrt(2*PI)) * pow(e, (pow(-newDir.x, 2)/2));
+			const int c = 5;
+			float newRandom = (1/ sqrt(2*PI)) * pow(e, (pow(-(brdf-c), 2)/2));
 
-			glm::vec4 newColor = glm::dot(glm::normalize(direction), normal) * m.color* f.intensity;
-			newDir = randomDirect();
 			while(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z *newDir.z > 1)
 			{
 				newDir = randomDirect();
 			}
 			newDir = reflect(glm::normalize(direction), normal);
-			
+
 			tracePhoton(f, newDir, l, scene);
 		}
 		else if(ksi > d && ksi < (s+d)) // specular reflection
 		{
-		    newDir= reflect(glm::normalize(direction), normal);
+			newDir = reflect(glm::normalize(direction), normal);
 			tracePhoton(f, newDir, l, scene);
 		}
-		else if(ksi > (s+d) && ksi < 1) // absorbed
+		else // absorbed
 		{
 			photonMap.push_back(f);
+			emitted++;
 		}
 	}
 }
-int emitted = 0, oldemitted = 0, run = 1;
+
 void RayTracer::emit(light l, objects* o)
 {
 	photon f;
@@ -452,11 +463,10 @@ void RayTracer::emit(light l, objects* o)
 		glm::vec3 direction = glm::normalize(glm::vec3(x,y,z));
 		f.position = l.location;
 		tracePhoton(f, direction, l, o);
-		emitted++;
 	}
 	for(int i = oldemitted; i < emitted; i++)
 	{
-		photonMap[i].intensity = (l.color.r/(emitted-oldemitted));
+		photonMap[i].intensity = (l.intensity/(emitted-oldemitted));
 	}
 	oldemitted = emitted;
 	run++;
