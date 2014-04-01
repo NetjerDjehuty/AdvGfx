@@ -39,6 +39,9 @@
     <ClInclude Include="Raytracer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PhotonMap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AdvGfx.cpp">
@@ -63,6 +66,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Raytracer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PhotonMap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

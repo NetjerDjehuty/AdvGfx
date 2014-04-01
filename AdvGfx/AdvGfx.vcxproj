@@ -78,6 +78,7 @@
     <ClInclude Include="Model.h" />
     <ClInclude Include="ModelMesh.h" />
     <ClInclude Include="objLoader.h" />
+    <ClInclude Include="PhotonMap.h" />
     <ClInclude Include="Raytracer.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
@@ -88,6 +89,7 @@
     <ClCompile Include="Model.cpp" />
     <ClCompile Include="ModelMesh.cpp" />
     <ClCompile Include="objLoader.cpp" />
+    <ClCompile Include="PhotonMap.cpp" />
     <ClCompile Include="Raytracer.cpp" />
     <ClCompile Include="stdafx.cpp" />
   </ItemGroup>

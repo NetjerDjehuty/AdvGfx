@@ -2,6 +2,7 @@
 #include <Windows.h>
 
 #include "AdvGfx.h"
+#include "PhotonMap.h"
 #include <vector>
 #include <random>
 
@@ -90,11 +91,12 @@ public:
 	glm::vec4 traceRay(ray* ray, objects* scene, int depth);
 	pixel* shootRay(camera c);
 	void emit(light l, objects* scene);
-	void tracePhoton(photon f, glm::vec3 direction, light l,  objects* scene);
+	void tracePhoton(photon f, glm::vec3 direction, light l,  objects* scene, int lvl);
 	std::vector<photon> shootPhoton();
 
-public:
-	std::vector<photon> photonMap;
+private:
+	std::vector<photon> photonList;
+	PhotonMap photonMap;
 	int nrOfPhotons;
 };
 objects createScene();
