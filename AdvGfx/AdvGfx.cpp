@@ -128,6 +128,7 @@ namespace AdvGfxCore
 	glm::vec3 movement;
 
 	GLuint prog;
+	GLuint rayProg;
 
 	GLuint projLoc;
 	GLuint viewLoc;
@@ -209,10 +210,10 @@ namespace AdvGfxCore
 		InitTex();
 
 		prog = loadProgram("bbShader.vert","bbShader.frag");
-
+		rayProg = loadProgram("rayShader.vert", "rayShader.frag");
 
 		projLoc = glGetUniformLocation(prog, "proj");
-		viewLoc = glGetUniformLocation(prog, "view");
+		viewLoc = glGetUniformLocation(rayProg, "view");
 		posLoc = glGetUniformLocation(prog, "particleCenter_worldspace");
 		colLoc = glGetUniformLocation(prog, "photonColor");
 		powLoc = glGetUniformLocation(prog, "pow");
@@ -224,7 +225,7 @@ namespace AdvGfxCore
 		//glm::mat4 viewMatrix = glm::translate(glm::mat4(1.0f), viewVec);
 		/*modelMatrix = glm::scale(glm::mat4(1.0f), glm::vec3(0.01f, 0.01f, 0.01f));*/
 
-		glUseProgram(prog);
+		glUseProgram(rayProg);
 
 
 		glUniformMatrix4fv(projLoc, 1, false, &c.projectionMatrix[0][0]);
@@ -254,7 +255,7 @@ namespace AdvGfxCore
 		glVertexAttribPointer(0, 2, GL_FLOAT, false, 0, 0);
 		glEnableVertexAttribArray(0);
 
-		glGenVertexArrays(1, &bbVAO[0]);
+		/*glGenVertexArrays(1, &bbVAO[0]);
 		glBindVertexArray(bbVAO[0]);
 
 
@@ -277,7 +278,7 @@ namespace AdvGfxCore
 		//glEnable(GL_CULL_FACE);
 		//glEnable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE);*/
 
 		getErrors();
 	}
@@ -296,45 +297,47 @@ namespace AdvGfxCore
 
 	void Draw()
 	{
-		//pixel *pixels = r.shootRay(c);
 
 		std::vector<photon> photons = r.shootPhoton();
+		pixel *pixels = r.shootRay(c);
 
 		clock_t startDraw = clock();
 
 		// Draw the pixels
 
-		//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280, 720, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280/4, 720/4, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 
 
 		float duration = (startDraw - lastDraw) / (float)CLOCKS_PER_SEC;
 
 		//viewVec += glm::vec3(xChange * duration, yChange * duration, zChange * duration);
-		glm::vec3 finalMovement = 10 * duration * movement;
+		/*glm::vec3 finalMovement = 10 * duration * movement;
 		finalMovement = glm::rotateX(finalMovement, -(c.xRot));
 		finalMovement = glm::rotateY(finalMovement, -c.yRot);
 		c.viewVec += finalMovement;
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-		c.viewMatrix = glm::mat4(1.0f);
+		/*c.viewMatrix = glm::mat4(1.0f);
 		c.viewMatrix = glm::rotate(c.viewMatrix, c.xRot, glm::vec3(1.f, 0.f, 0.f));
 		c.viewMatrix = glm::rotate(c.viewMatrix, c.yRot, glm::vec3(0.f, 1.f, 0.f));
-		c.viewMatrix = glm::translate(c.viewMatrix, -(c.viewVec));
+		c.viewMatrix = glm::translate(c.viewMatrix, -(c.viewVec));*/
 
 		//modelMatrix = glm::rotate(modelMatrix, (float)duration * 50, 0.f, 1.f, 0.f);
 
 		glUniformMatrix4fv(viewLoc, 1, false, &c.viewMatrix[0][0]);
 		//glUniformMatrix4fv(modelLoc, 1, false, &modelMatrix[0][0]);
 
-		int count = photons.size();
+		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		/*int count = photons.size();
 
 
 		for(;count-->0;)
 		{
 			DrawPhoton(photons[count]);
-		}
+		}*/
 
 		getErrors();
 

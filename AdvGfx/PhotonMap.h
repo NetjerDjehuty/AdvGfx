@@ -27,9 +27,9 @@ public:
 	void store(const glm::vec3 power, const glm::vec3 pos, const glm::vec3 dir);
 	void scalePhotonPower(const float scale);
 	void balance();
-	void irradianceEstimate(glm::vec3 irrad, const glm::vec3 pos, const glm::vec3 normal, const float maxDist, const int nrPhotons) const;
+	void irradianceEstimate(glm::vec3 &irrad, const glm::vec3 pos, const glm::vec3 normal, const float maxDist, const int nrPhotons) const;
 	void locatePhotons(NearestPhoton *const np, const int index = 1) const;
-	void photonDir(glm::vec3 dir, const Photon *p) const;
+	void photonDir(glm::vec3 &dir, const Photon *p) const;
 
 private:
 	void balanceSeg(Photon **pbal, Photon **porg, const int index, const int start, const int end);

@@ -44,8 +44,8 @@ struct light
 {
 	glm::vec3 location;
 	glm::vec4 color;
-	glm::vec3 dir;
-	glm::vec3 normal;
+	/*glm::vec3 dir;
+	glm::vec3 normal;*/
 	float intensity;
 };
 
@@ -98,5 +98,9 @@ private:
 	std::vector<photon> photonList;
 	PhotonMap photonMap;
 	int nrOfPhotons;
+	std::random_device rd;
+	std::mt19937 engine;
+
+	glm::vec3 randomDirect();
 };
 objects createScene();

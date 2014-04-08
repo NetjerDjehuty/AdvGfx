@@ -2,7 +2,10 @@
 
 using namespace AdvGfxCore;
 
-RayTracer::RayTracer() : photonMap(1000000) {};
+RayTracer::RayTracer() : photonMap(1000000), rd(), engine(rd())
+{
+	engine.seed(time(NULL));
+};
 RayTracer::~RayTracer(){};
 
 pixel *pixels;
@@ -86,9 +89,9 @@ objects createScene()
 	s.pos = glm::vec3(1.f,-2.f,30.f);
 	s.radius = 3.0f;
 	s.mat.color = glm::vec4(1,0,0,1);
-	s.mat.reflectivity = 0.0f;
+	s.mat.reflectivity = 1.0f;
 	s.mat.refractivity = 0.0f;
-	s.mat.diffuse = 0.5f;
+	s.mat.diffuse = 0.0f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
@@ -99,7 +102,7 @@ objects createScene()
 	s.mat.color = glm::vec4(0,0,1,1);
 	s.mat.reflectivity = 0.0f;
 	s.mat.refractivity = 0.0f;
-	s.mat.diffuse = 0.5f;
+	s.mat.diffuse = 0.8f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
@@ -108,7 +111,7 @@ objects createScene()
 	// BOTTOM
 	p.point = glm::vec3(0.f, -10.f, 0.f);
 	p.normal = glm::vec3(0.f,1.f,0.f);
-	p.mat.color = glm::vec4(1,1,1,1);
+	p.mat.color = glm::vec4(1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
 	p.mat.diffuse = 0.5f;
@@ -131,7 +134,7 @@ objects createScene()
 	p.mat.color = glm::vec4(1,0,0,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
-	p.mat.diffuse = 0.5f;
+	p.mat.diffuse = 0.9f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -141,7 +144,7 @@ objects createScene()
 	p.mat.color = glm::vec4(0,0,1,1);
 	p.mat.reflectivity = 0.0f;
 	p.mat.refractivity = 0.0f;
-	p.mat.diffuse = 0.5f;
+	p.mat.diffuse = 0.9f;
 	o.planes.push_back(p);
 	o.nrPlanes++;
 
@@ -157,44 +160,30 @@ objects createScene()
 
 	light l;
 
-	l.color = glm::vec4((float)1/3);
-	l.intensity = 5000;
-	l.location = glm::vec3(-8,4.5,38);
-	l.dir = glm::normalize(l.location - s.pos);
-	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
-		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
-	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
-		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
-	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
-		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
+	l.color = glm::vec4(1.f/4.f);
+	l.intensity = 3000;
+	l.location = glm::vec3(-3,4,0);
 	o.lights.push_back(l);
 	o.nrLights++;
 
-	l.color = glm::vec4((float)1/3);
-	l.intensity = 5000;
+	/*l.color = glm::vec4(1);
+	l.intensity = 1000;
 	l.location = glm::vec3(6,4,20);
-	l.dir = glm::normalize(l.location - s.pos);
-	if(l.dir.x <= l.dir.y && l.dir.x <= l.dir.z)
-		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
-	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
-		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
-	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
-		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
-	o.nrLights++;
+	o.nrLights++;*/
 
-	l.color = glm::vec4((float)1/3);
+	/*l.color = glm::vec4((float)1/3);
 	l.intensity = 5000;
 	l.location = glm::vec3(2,3,8);
 	l.dir = glm::normalize(l.location - s.pos);
 	if(l.dir.x < l.dir.y && l.dir.x < l.dir.z)
-		l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
+	l.normal = glm::normalize(glm::vec3((-1)*l.dir.x, 0.0f, 0.0f));
 	if(l.dir.y < l.dir.x && l.dir.y < l.dir.z)
-		l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
+	l.normal = glm::normalize(glm::vec3(0.0f,(-1)*l.dir.y, 0.0f));
 	if(l.dir.z < l.dir.x && l.dir.z < l.dir.y)
-		l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
+	l.normal = glm::normalize(glm::vec3(0.0f, 0.0f,(-1)*l.dir.z));
 	o.lights.push_back(l);
-	o.nrLights++;
+	o.nrLights++;*/
 
 	return o;
 }
@@ -257,7 +246,7 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 
 	glm::vec4 color(0);
 	if ( t < maxDist ){		
-		glm::vec3 intersectPos = r->origin+r->direction*t ;
+		glm::vec3 intersectPos = r->origin+r->direction*(t-0.0001f) ;
 		glm::vec3 normal;
 
 		material m;
@@ -271,14 +260,14 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 			m = ((plane*)intersectObj)->mat;
 		}
 
-		glm::vec4 reflectColor = m.color, refractColor = m.color;
+		glm::vec4 reflectColor = glm::vec4(0), refractColor = glm::vec4(0);
 		if(depth <= 4)
 		{
 			if (m.reflectivity > 0 )
 			{
 				ray reflectRay;
 				glm::vec3 R = reflect(r->direction, normal);
-				reflectRay.origin = intersectPos + R*0.001f;
+				reflectRay.origin = intersectPos;
 				reflectRay.direction = R;
 				reflectColor = m.reflectivity * traceRay(&reflectRay, scene, depth + 1);
 			} 
@@ -296,8 +285,7 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 
 		for(int i = 0; i < scene->nrLights; i++){
 			float lightDist = glm::length(scene->lights[i].location - intersectPos);
-			glm::vec3 L = scene->lights[i].dir;
-			L = scene->lights[i].location - intersectPos ;
+			glm::vec3 L = scene->lights[i].location - intersectPos ;
 			lightDist = glm::length(L);
 			L = glm::normalize(L);
 
@@ -310,12 +298,18 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 				pointLit = 0;
 			}
 
-			glm::vec4 diffuseColor = refractColor + reflectColor + m.color * (m.reflectivity + m.refractivity);
+			glm::vec4 diffuseColor = refractColor + reflectColor + m.color * (1 - (m.reflectivity + m.refractivity));
 
-			color += pointLit* diffuseColor *scene->lights[i].color*glm::max(0.0f,glm::dot(normal, L));
+			color += pointLit * diffuseColor * glm::max(0.0f,glm::dot(normal, L));
 		}
+
+		glm::vec3 globalColor = glm::vec3(0);
+		photonMap.irradianceEstimate(globalColor, intersectPos, normal, 3, 200);
+		color += glm::vec4(globalColor,1);
+
 	}
-	return glm::clamp(color, 0.0f, 1.0f) * 255.0f;
+
+	return glm::clamp(color, 0.0f, 1.0f);
 }
 
 
@@ -323,7 +317,7 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 pixel* RayTracer::shootRay(camera c)
 {
 	objects o = createScene();
-	/*shootPhoton(&o);/*
+	/*shootPhoton(&o);*/
 	glm::mat4 viewProjectionMatrix = c.viewMatrix * c.projectionMatrix;
 
 	ray r;
@@ -332,46 +326,48 @@ pixel* RayTracer::shootRay(camera c)
 
 	pixel p = { 0,0,0,255 };
 
-	const int width = 1280;
-	const int height = 720;
+	const int width = 1280/4;
+	const int height = 720/4;
 	const float aspect = (float)width/(float)height;
 
 	pixel *pixels = new pixel[width*height];
 	for(int x = 0; x < width; x++)
 	{
-	for(int y = 0; y < height; y++)
-	{
-	float xx = (float) x / width + (1/width);
-	float yy = (float) y / height + (1/height);
+		for(int y = 0; y < height; y++)
+		{
+			float xx = (float) x / width + (1/width);
+			float yy = (float) y / height + (1/height);
 
-	xx = (xx - 0.5f) * aspect;
-	yy = (yy - 0.5f);
+			xx = (xx - 0.5f) * aspect;
+			yy = (yy - 0.5f);
 
-	temp = c.viewMatrix * glm::vec4(xx, yy, 0, 1.0f);
-	r.direction = glm::normalize(glm::vec3(temp.x, temp.y, temp.z) - r.origin);
+			temp = c.viewMatrix * glm::vec4(xx, yy, 0, 1.0f);
+			r.direction = glm::normalize(glm::vec3(temp.x, temp.y, temp.z) - r.origin);
 
-	pixels[y * width + x] = p;
+			pixels[y * width + x] = p;
 
-	glm::vec4 result = RayTracer::traceRay(&r,&o, 1);
-	pixels[y * width + x].a = result.a;
-	pixels[y * width + x].r = result.r;
-	pixels[y * width + x].g = result.g;
-	pixels[y * width + x].b = result.b;
+			glm::vec4 result = RayTracer::traceRay(&r,&o, 1) * 255;
+			pixels[y * width + x].a = result.a;
+			pixels[y * width + x].r = result.r;
+			pixels[y * width + x].g = result.g;
+			pixels[y * width + x].b = result.b;
 
+		}
 	}
-	}*/
 
 	return pixels;
 }
 
-glm::vec3 randomDirect()
+glm::vec3 RayTracer::randomDirect()
 {
-	std::random_device rd;
-	std::mt19937 engine(rd());
-	std::uniform_real<float> dist(-1.0f, 1.0f);
+	std::uniform_real<float> dist(0.0f, 2.0f);
 
-	float x = dist(engine), y = dist(engine), z = dist(engine);
-	return glm::vec3(x,y,z);
+	float x = dist(engine) - 1, y = dist(engine) - 1, z = dist(engine) - 1;
+	while((x*x) + (y*y) + (z*z) > 1)
+	{
+		x = dist(engine) - 1, y = dist(engine) -1, z = dist(engine) -1;
+	}
+	return glm::normalize(glm::vec3(x,y,z));
 }
 
 int emitted = 0, oldemitted = 0, run = 1;
@@ -422,7 +418,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 		glm::vec3 newDir;
 		if(0 < ksi && ksi < d) // diffuse reflection
 		{
-			float brdf = glm::dot(glm::normalize(direction), normal) /** m.color * f.intensity*/;
+			/*float brdf = glm::dot(glm::normalize(direction), normal) * m.color * f.intensity;
 			newDir = randomDirect();
 			float propDens = (1 / sqrt(2*PI)) * pow(e, (pow(-newDir.x, 2)/2));
 			const int c = 5;
@@ -430,8 +426,8 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 
 			while(newDir.x * newDir.x + newDir.y * newDir.y + newDir.z *newDir.z > 1)
 			{
-				newDir = randomDirect();
-			}
+			newDir = randomDirect();
+			}*/
 			newDir = reflect(glm::normalize(direction), normal);
 
 			photonList.push_back(f);
@@ -462,23 +458,17 @@ void RayTracer::emit(light l, objects* o)
 	photon f;
 	std::random_device rd;
 	std::mt19937 engine(rd());
-	std::uniform_real<float> dist(-1.0f, 1.0f);
+	engine.seed(time(NULL));
+	std::uniform_real<float> dist(0.0f, 2.0f);
 	while(emitted < nrOfPhotons * run)
 	{
-		float x = dist(engine), y = dist(engine), z = dist(engine);
-		while((x*x) + (y*y) + (z*z) > 1)
-		{
-			x = dist(engine), y = dist(engine), z = dist(engine);
-		}
-
-		glm::vec3 direction = glm::normalize(glm::vec3(x,y,z));
+		glm::vec3 direction = randomDirect();
 		f.position = l.location;
-		f.color = l.color;
+		f.color = l.color * l.intensity;
 		tracePhoton(f, direction, l, o, 0);
 	}
 
-	photonMap.scalePhotonPower(1.f/l.intensity);
-	photonMap.balance();
+	photonMap.scalePhotonPower(1.f/nrOfPhotons);
 
 	int s = photonList.size();
 
@@ -498,8 +488,7 @@ std::vector<photon> RayTracer::shootPhoton()
 
 	objects scene = createScene();
 
-	nrOfPhotons = 5000;
-	photon f;
+	nrOfPhotons = 50000;
 
 	for(int i = 0; i < scene.nrLights; i++)
 	{
@@ -507,6 +496,7 @@ std::vector<photon> RayTracer::shootPhoton()
 		emit(l, &scene);
 	}
 
+	photonMap.balance();
 	return photonList;
 }
 objects o;

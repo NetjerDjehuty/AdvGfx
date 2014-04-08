@@ -28,14 +28,14 @@ PhotonMap::~PhotonMap()
 	delete[] photons;
 }
 
-void PhotonMap::photonDir(glm::vec3 dir, const Photon *p) const
+void PhotonMap::photonDir(glm::vec3 &dir, const Photon *p) const
 {
 	dir[0] = sinTheta[p->theta] * cosPhi[p->phi];
 	dir[1] = sinTheta[p->theta] * sinPhi[p->phi];
 	dir[2] = cosTheta[p->theta];
 }
 
-void PhotonMap::irradianceEstimate(glm::vec3 irrad, const glm::vec3 pos, const glm::vec3 normal, const float maxDist, const int nrPhotons) const
+void PhotonMap::irradianceEstimate(glm::vec3 &irrad, const glm::vec3 pos, const glm::vec3 normal, const float maxDist, const int nrPhotons) const
 {
 	irrad[0] = irrad[1] = irrad[2] = 0.0f;
 	NearestPhoton np;
@@ -57,13 +57,13 @@ void PhotonMap::irradianceEstimate(glm::vec3 irrad, const glm::vec3 pos, const g
 	for(int i = 1; i <= np.found; i++)
 	{
 		const Photon *p = np.index[i];
-		photonDir(pdir, p);
-		if(pdir[0] * normal[0] + pdir[1] * normal[1] + pdir[2] * normal[2] < 0.0f)
-		{
+		//photonDir(pdir, p);
+		//if(pdir[0] * normal[0] + pdir[1] * normal[1] + pdir[2] * normal[2] < 0.0f)
+		//{
 			irrad[0] += p->power[0];
 			irrad[1] += p->power[1];
 			irrad[2] += p->power[2];
-		}
+		//}
 	}
 
 	const float temp = (1.0f/PI)/(np.dist2[0]);
@@ -117,7 +117,7 @@ void PhotonMap::locatePhotons(NearestPhoton *const np, const int index) const
 				float dst2;
 				const Photon *phot;
 				int halfFound = np->found>>1;
-				for(int i = halfFound; i>=i; i--)
+				for(int i = halfFound; i>=1; i--)
 				{
 					parent = i;
 					phot = np->index[i];
