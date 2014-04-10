@@ -307,7 +307,7 @@ namespace AdvGfxCore
 
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1280/4, 720/4, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
-
+		delete[] pixels;
 
 		float duration = (startDraw - lastDraw) / (float)CLOCKS_PER_SEC;
 

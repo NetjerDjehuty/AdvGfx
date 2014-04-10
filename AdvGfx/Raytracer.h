@@ -101,6 +101,7 @@ private:
 	std::random_device rd;
 	std::mt19937 engine;
 
+	glm::vec3 randomHSphere(glm::vec3 N);
 	glm::vec3 randomDirect();
 };
 objects createScene();

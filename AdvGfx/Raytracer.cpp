@@ -54,6 +54,24 @@ bool RayTracer::rayTriangleIntersection(triangle* t, ray* r)
 
 bool RayTracer::raySphereIntersection(sphere* s, ray* r, float* f)
 {
+	glm::vec3 L = s->pos - r->origin;
+	float tca = glm::dot(L,r->direction);
+	if(tca < 0)
+		return false;
+	
+	float d2 = glm::dot(L,L) - tca * tca;
+	float radius2 = s->radius * s->radius;
+	if(d2 > radius2)
+		return false;
+
+	float thc = sqrt(radius2 - d2);
+	*f = tca - thc;
+	if(*f < 0)
+		*f = tca + thc;
+
+	return true;
+
+	/*
 	glm::vec3 rayToCenter = (s->pos) - (r->origin);
 	float dotProduct = glm::dot(r->direction, rayToCenter);
 	float d = (dotProduct * dotProduct) - glm::dot(rayToCenter, rayToCenter) + (s->radius * s->radius);
@@ -67,7 +85,7 @@ bool RayTracer::raySphereIntersection(sphere* s, ray* r, float* f)
 		if(*f < 0)
 			return false;
 	}
-	return true;
+	return true;*/
 };
 
 bool RayTracer::rayPlaneIntersection(plane* p, ray* r, float* f)
@@ -101,8 +119,8 @@ objects createScene()
 	s.radius = 1.5f;
 	s.mat.color = glm::vec4(0,0,1,1);
 	s.mat.reflectivity = 0.0f;
-	s.mat.refractivity = 0.0f;
-	s.mat.diffuse = 0.8f;
+	s.mat.refractivity = 1.0f;
+	s.mat.diffuse = 0.0f;
 
 	o.spheres.push_back(s);
 	o.nrSpheres++;
@@ -161,7 +179,7 @@ objects createScene()
 	light l;
 
 	l.color = glm::vec4(1.f/4.f);
-	l.intensity = 3000;
+	l.intensity = 6000;
 	l.location = glm::vec3(-3,4,0);
 	o.lights.push_back(l);
 	o.nrLights++;
@@ -240,13 +258,16 @@ glm::vec3 refract(glm::vec3 V, glm::vec3 N, float refrIndex)
 
 glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 {
+	if(depth > 6)
+		return glm::vec4(1,0,0,1);
+
 	void* intersectObj = 0;
 	int intersectObjType = 0;
 	float t = intersect( r, scene, &intersectObj, &intersectObjType);
 
 	glm::vec4 color(0);
 	if ( t < maxDist ){		
-		glm::vec3 intersectPos = r->origin+r->direction*(t-0.0001f) ;
+		glm::vec3 intersectPos = r->origin+r->direction*t ;
 		glm::vec3 normal;
 
 		material m;
@@ -261,27 +282,26 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 		}
 
 		glm::vec4 reflectColor = glm::vec4(0), refractColor = glm::vec4(0);
-		if(depth <= 4)
+
+		if (m.reflectivity > 0 )
 		{
-			if (m.reflectivity > 0 )
-			{
-				ray reflectRay;
-				glm::vec3 R = reflect(r->direction, normal);
-				reflectRay.origin = intersectPos;
-				reflectRay.direction = R;
-				reflectColor = m.reflectivity * traceRay(&reflectRay, scene, depth + 1);
-			} 
-			else if (m.refractivity > 0 )
-			{
-				ray refractRay;
-				glm::vec3 R = refract(r->direction, normal, 0.6);
-				if (glm::dot(R,normal) < 0 ){
-					refractRay.origin = intersectPos + R*0.001f;
-					refractRay.direction = R;
-					refractColor = m.refractivity * traceRay(&refractRay, scene, depth +1);
-				}
+			ray reflectRay;
+			glm::vec3 R = glm::normalize(reflect(r->direction, normal));
+			reflectRay.origin = intersectPos + R*0.001f;
+			reflectRay.direction = R;
+			reflectColor = m.reflectivity * traceRay(&reflectRay, scene, depth + 1);
+		} 
+		else if (m.refractivity > 0 )
+		{
+			ray refractRay;
+			glm::vec3 R = glm::normalize(refract(r->direction, normal, 1.5f));
+			if (glm::dot(R,normal) < 0 ){
+				refractRay.origin = intersectPos + R*0.001f;
+				refractRay.direction = R;
+				refractColor = m.refractivity * traceRay(&refractRay, scene, depth +1);
 			}
 		}
+
 
 		for(int i = 0; i < scene->nrLights; i++){
 			float lightDist = glm::length(scene->lights[i].location - intersectPos);
@@ -298,13 +318,13 @@ glm::vec4 RayTracer::traceRay(ray* r, objects* scene, int depth)
 				pointLit = 0;
 			}
 
-			glm::vec4 diffuseColor = refractColor + reflectColor + m.color * (1 - (m.reflectivity + m.refractivity));
+			glm::vec4 diffuseColor = refractColor + reflectColor + pointLit * m.color * (1 - (m.reflectivity + m.refractivity))* glm::max(0.0f,glm::dot(normal, L));
 
-			color += pointLit * diffuseColor * glm::max(0.0f,glm::dot(normal, L));
+			color += diffuseColor ;
 		}
 
 		glm::vec3 globalColor = glm::vec3(0);
-		photonMap.irradianceEstimate(globalColor, intersectPos, normal, 3, 200);
+		photonMap.irradianceEstimate(globalColor, intersectPos, normal, 2, 100);
 		color += glm::vec4(globalColor,1);
 
 	}
@@ -358,6 +378,18 @@ pixel* RayTracer::shootRay(camera c)
 	return pixels;
 }
 
+glm::vec3 RayTracer::randomHSphere(glm::vec3 N)
+{
+	std::uniform_real<float> dist(0.0f, 2.0f);
+
+	float x = dist(engine) - 1, y = dist(engine) - 1, z = dist(engine) - 1;
+	while((x*x) + (y*y) + (z*z) > 1 && glm::dot(glm::vec3(x,y,z),N) < 0)
+	{
+		x = dist(engine) - 1, y = dist(engine) -1, z = dist(engine) -1;
+	}
+	return glm::normalize(glm::vec3(x,y,z));
+}
+
 glm::vec3 RayTracer::randomDirect()
 {
 	std::uniform_real<float> dist(0.0f, 2.0f);
@@ -376,8 +408,8 @@ int emitted = 0, oldemitted = 0, run = 1;
 // if not it stores the photon in the photon map with its new collision position
 void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* scene, int lvl)
 {
-	//if(lvl > 0)
-	//	return;
+	if(lvl > 8)
+		return;
 
 	float ksi = ((float) rand() / (RAND_MAX));
 	void* intersectObj = 0;
@@ -392,7 +424,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 	if (t > 0 && t < maxDist ) // Intersection before the max redering distance is achieved
 	{		// If it doesn't collide before, shits going down :(
 		glm::vec3 normal;
-		f.position = f.position + direction * (t - 0.0001f);
+		f.position = f.position + direction * t ;
 
 		material m;
 
@@ -413,7 +445,7 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 
 		float s = m.reflectivity;
 		float d = m.diffuse;
-
+		float t = m.refractivity;
 
 		glm::vec3 newDir;
 		if(0 < ksi && ksi < d) // diffuse reflection
@@ -428,19 +460,27 @@ void RayTracer::tracePhoton(photon f, glm::vec3 direction, light l, objects* sce
 			{
 			newDir = randomDirect();
 			}*/
-			newDir = reflect(glm::normalize(direction), normal);
+			newDir = randomHSphere(normal);//reflect(glm::normalize(direction), normal);
 
 			photonList.push_back(f);
 			photonMap.store(glm::vec3(f.color.r,f.color.g,f.color.b),f.position,direction);
 
 			f.color *= m.color;
+			f.position += newDir *0.001f;
 
 			tracePhoton(f, newDir, l, scene, lvl + 1);
 		}
-		else if(ksi > d && ksi < (s+d)) // specular reflection
+		else if(ksi < (s+d)) // specular reflection
 		{
-			newDir = reflect(glm::normalize(direction), normal);
+			newDir = glm::normalize(reflect(direction, normal));
+			f.position += newDir*0.001f;
 			tracePhoton(f, newDir, l, scene, lvl + 1);
+		}
+		else if (ksi < (s+d+t)) // transmission
+		{
+			newDir = glm::normalize(refract(direction, normal, 0.8f));
+			f.position += newDir*0.001f;
+			tracePhoton(f, newDir, l, scene, lvl +1);
 		}
 		else // absorbed
 		{
@@ -488,7 +528,7 @@ std::vector<photon> RayTracer::shootPhoton()
 
 	objects scene = createScene();
 
-	nrOfPhotons = 50000;
+	nrOfPhotons = 100000;
 
 	for(int i = 0; i < scene.nrLights; i++)
 	{
